@@ -1,4 +1,37 @@
+<?php
 
+include '../Classes/User.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $messageType = 'danger';
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $confirmPassword = $_POST['confirmPassword'];
+    $username = $_POST['username'];
+
+    if (empty($email) || empty($password) || empty($confirmPassword)) {
+        $message = "Proszę wypełnić wszystkie pola";
+    }
+    else if($password != $confirmPassword) {
+        $message = 'Hasła nie pasują do siebie';
+    }
+    else {
+        $userObject = new User();
+        $userAdd = $userObject -> addUser($email, $password, $username);
+        if ($userAdd === true) {
+            $message = 'Użytkownik został dodany. Możesz się teraz zalogować<br><a href="login.php">Zaloguj się</a>';
+            $messageType = 'success';
+        }
+        else if ($userAdd == false) {
+            $message = 'Nie udało się dodać użytkownika. Spróbuj ponownie';
+        }
+        else {
+            $message = $userAdd;
+        }
+    }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>

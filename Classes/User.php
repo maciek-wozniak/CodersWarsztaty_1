@@ -9,6 +9,21 @@ Class User {
     public $email;
     public $username;
 
+
+    public function __construct() {
+        if (session_status() != PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        if (!empty($_SESSION['user'])) {
+            $user = $_SESSION['user'];
+            $this->id = $user['id'];
+            $this->email = $user['email'];
+            $this->username = $user['username'];
+            $this->salt = $user['salt'];
+        }
+    }
+
     public function addUser($mail, $password, $name = null) {
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL) || empty($password)) {
             return false;
@@ -41,13 +56,13 @@ Class User {
         $this->salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM);
     }
 
-    public function login($mail, $password) {
+    public function logIn($mail, $password) {
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL) || empty($password)) {
             return false;
         }
 
         $conn = DbConnection::getConnection();
-        $getUserQuery = 'SELECT * FROM users WHERE email="' . $mail . '"';
+        $getUserQuery = 'SELECT * FROM users WHERE email="' . $mail . '" WHERE deleted=0';
         $result = $conn->query($getUserQuery);
         if ($result->num_rows == 0) {
             return false;
@@ -61,23 +76,25 @@ Class User {
             return false;
         }
 
+        unset($user['password']);
         $_SESSION['user'] = $user;
         $conn->close();
         $conn=null;
         return true;
     }
 
-    public function updateUser($mail, $name = null) {
+    public function logOut() {
+        unset($_SESSION['user']);
+    }
+
+    public function updateUser($mail, $name) {
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL) ) {
             return false;
         }
-        $connection = DbConnection::getConnection();
-        $insertUserQuery = 'UPDATE users SET username="'.$name.'", email="'.mail.'" WHERE id="'.$this->id.'")';
-        $result = $connection->query($insertUserQuery);
 
-        if ($result->error && $connection->errno == 1062) {
-            return 'Istnieje użytkownik z tym adresem e-mail';
-        }
+        $connection = DbConnection::getConnection();
+        $updateUserQuery = 'UPDATE users SET username="'.$name.'", email="'.$mail.'" WHERE id="'.$this->id.'")';
+        $result = $connection->query($updateUserQuery);
 
         $connection->close();
         $connection=null;
@@ -85,7 +102,13 @@ Class User {
     }
 
     public function deleteUser() {
+        $conn = DbConnection::getConnection();
+        $getUserQuery = 'UPDATE users SET deleted=1 WHERE id="' . $this->id . '"';
+        $result = $conn->query($getUserQuery);
 
+        $conn->close();
+        $conn=null;
+        return $result;
     }
 
     public function getAllPosts() {
@@ -100,7 +123,33 @@ Class User {
 
     }
 
+    public function updateUserPassword($oldPassword, $newPassword, $confirmPassword) {
+        $conn = DbConnection::getConnection();
+        $getUserQuery = 'SELECT * FROM users WHERE id="' . $this->id . '"';
+        $result = $conn->query($getUserQuery);
+        if ($result->num_rows == 0) {
+            return false;
+        }
+        $user = $result->fetch_assoc();
+        $this->salt = $user['salt'];
 
+        $hashedOldPassword = $this->hashPassword($oldPassword);
+        if ($hashedOldPassword != $user['password']) {
+            return 'Niepoprawne stare hasło';
+        }
+
+        if ($newPassword != $confirmPassword) {
+            return 'Hasła nowe różne';
+        }
+
+        $hashedNewPassword = $this->hashPassword($newPassword);
+        $updateUserQuery = 'UPDATE users SET password="'.$hashedNewPassword.'" WHERE id="'.$this->id.'")';
+        $result = $conn->query($updateUserQuery);
+
+        $conn->close();
+        $conn=null;
+        return $result;
+    }
 
 
 }
