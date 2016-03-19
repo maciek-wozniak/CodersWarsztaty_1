@@ -67,8 +67,17 @@ Class Tweet {
     }
 
     public function showTweet() {
+        if (!isset($_SESSION)) {
+            return false;
+        }
+
+        $editLink = '';
+        if ($this->authorId == $_SESSION['user']->getId()) {
+            $editLink = '<a class="btn btn-xs btn-primary" href="index.php?editTweet='.$this->getTweetId().'">Edytuj</a>';
+        }
+
         echo '<div class="panel panel-primary">';
-            echo '<div class="panel-heading">Tweet z '.$this->createDate.'</div>';
+            echo '<div class="panel-heading">Tweet z '.$this->createDate.' '.$editLink.'</div>';
             echo '<div class="panel-body">'.$this->tweetText.'</div>';
         echo '</div>';
     }
