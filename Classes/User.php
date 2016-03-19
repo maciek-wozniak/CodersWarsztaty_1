@@ -1,6 +1,7 @@
 <?php
 
 include_once dirname(__FILE__).'/DbConnection.php';
+include_once dirname(__FILE__).'/Tweet.php';
 
 Class User {
     private $id;
@@ -8,7 +9,6 @@ Class User {
     private $salt;
     public $email;
     public $username;
-
 
     public function __construct() {
         if (session_status() != PHP_SESSION_ACTIVE) {
@@ -119,8 +119,20 @@ Class User {
         return $result;
     }
 
-    public function getAllPosts() {
+    public function getAllMyTweets() {
+        $myTweets = array();
 
+        $connection = DbConnection::getConnection();
+        $getTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id=' .$this->id;
+        $result = $connection->query($getTweets);
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $myTweet = new Tweet();
+                $myTweet->loadTweetFromDb($row['id']);
+                $myTweets[$myTweet->getTweetId()] = $myTweet;
+            }
+        }
+        return $myTweets;
     }
 
     public function getAllMessages() {

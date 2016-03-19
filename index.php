@@ -20,11 +20,12 @@ if (!$conn) {
 </head>
 <body>
 
+
 <div class="container">
 
     <div class="row">
         <!-- Left panel -->
-        <div class="col-sm-3" style="background-color: lime; min-height: 100%;"><?php
+        <div class="col-sm-12" style="background-color: lime; min-height: 100%;"><?php
 
             if (isset($_SESSION['user'])) {
                 include_once dirname(__FILE__).'/views/userPanel.php';
@@ -35,13 +36,30 @@ if (!$conn) {
 
         ?>
         </div>
+    </div>
 
 
         <!-- Main panel -->
-        <div class="col-sm-6" style="background-color: red; height: 200px;"></div>
+    <div class="row">
+        <div class="col-sm-12" style="background-color: red; height: 200px;">
+            <?php
+                if (isset($_SESSION['user'])) {
+                    $arrayMyTweets = $user->getAllMyTweets();
+
+                    foreach ($arrayMyTweets as $tweet) {
+                        echo $tweet->getTweetText().'<br>';
+                    }
+                }
+            ?>
+        </div>
+    </div>
 
         <!-- Left panel -->
-        <div class="col-sm-3" style="background-color: yellow; height: 200px;"></div>
+    <div class="row">
+        <div class="col-sm-12" style="background-color: yellow; height: 200px;"></div>
+    </div>
+
+
     </div>
 
 </div>
