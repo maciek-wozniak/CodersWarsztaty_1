@@ -1,49 +1,51 @@
 <?php
 
-include '../Classes/User.php';
+include_once dirname(__FILE__).'/../Classes/User.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $messageType = 'danger';
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $confirmPassword = $_POST['confirmPassword'];
-    $username = $_POST['username'];
 
-    if (empty($email) || empty($password) || empty($confirmPassword)) {
+    if (empty($email) || empty($password) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = "Proszę wypełnić wszystkie pola";
-    }
-    else if($password != $confirmPassword) {
-        $message = 'Hasła nie pasują do siebie';
     }
     else {
         $userObject = new User();
-        $userAdd = $userObject -> addUser($email, $password, $username);
-        if ($userAdd === true) {
-            $message = 'Użytkownik został dodany. Możesz się teraz zalogować<br><a href="login.php">Zaloguj się</a>';
+        $userLogin = $userObject -> login($email, $password);
+        if ($userLogin === true) {
+
             $messageType = 'success';
-        }
-        else if ($userAdd == false) {
-            $message = 'Nie udało się dodać użytkownika. Spróbuj ponownie';
+            unset($userObject);
+            unset($userLogin);
+            $loggedUser = new User();
+            unset($_SESSION['user']);
+            $_SESSION['user'] = $loggedUser;
+            header("Location: index.php");
         }
         else {
-            $message = $userAdd;
+            $message = 'Nie udało się zalogować, spróbuj ponownie.';
         }
     }
 }
 
 ?>
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>myTwitter</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-</head>
-<body>
 
+<?php
 
+if (isset($message) && isset($messageType)) {
+    showMessage($message, $messageType);
+}
+
+function showMessage($text, $type) {
+    echo '<div class="alert alert-'.$type.'" role="alert" style="width: 400px; margin: 0 auto; margin-top: 20px;">'.$text.'</div>';
+}
+
+?>
+
+<div class="row">
 <div class="well" style="width: 400px; margin: 0 auto; margin-top: 20px;">
-    <form class="form-horizontal" method="post" action="login.php">
+    <form class="form-horizontal" method="post" action="">
 
         <div class="form-group ">
             <div class="col-sm-offset-5 col-sm-7">
@@ -73,6 +75,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     </form>
 </div>
-
-</body>
-</html>
+</div>

@@ -1,13 +1,13 @@
 <?php
 require_once 'Classes/DbConnection.php';
 include_once 'Classes/User.php';
+session_start();
 
 
 $conn = DbConnection::getConnection();
 if (!$conn) {
     echo "Nie udało się połączyć z bazą! " .$conn->error;
 }
-
 
 
 ?>
@@ -20,7 +20,31 @@ if (!$conn) {
 </head>
 <body>
 
+<div class="container">
 
+    <div class="row">
+        <!-- Left panel -->
+        <div class="col-sm-3" style="background-color: lime; min-height: 100%;"><?php
+
+            if (isset($_SESSION['user'])) {
+                include_once dirname(__FILE__).'/views/userPanel.php';
+            }
+            else {
+                include_once dirname(__FILE__).'/views/login.php';
+            }
+
+        ?>
+        </div>
+
+
+        <!-- Main panel -->
+        <div class="col-sm-6" style="background-color: red; height: 200px;"></div>
+
+        <!-- Left panel -->
+        <div class="col-sm-3" style="background-color: yellow; height: 200px;"></div>
+    </div>
+
+</div>
 
 
 </body>

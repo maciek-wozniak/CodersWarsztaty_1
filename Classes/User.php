@@ -1,6 +1,6 @@
 <?php
 
-include_once 'DbConnection.php';
+include_once dirname(__FILE__).'/DbConnection.php';
 
 Class User {
     private $id;
@@ -31,8 +31,8 @@ Class User {
         $this->generateSalt();
         $hashedPassword = $this->hashPassword($password);
         $connection = DbConnection::getConnection();
-        $insertUserQuery = 'INSERT INTO users (username, email, password, salt) VALUES
-                ("'.$name.'", "'.$mail.'", "'.$hashedPassword.'", "'.$this->salt.'")';
+        $insertUserQuery = 'INSERT INTO users (username, email, password, salt, createdUser) VALUES
+                ("'.$name.'", "'.$mail.'", "'.$hashedPassword.'", "'.$this->salt.'","'.date('Y-m-d').'")';
         $result = $connection->query($insertUserQuery);
 
         if ($connection->error && $connection->errno == 1062) {
@@ -48,8 +48,7 @@ Class User {
             'cost' => 11,
             'salt' => $this->salt
         );
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT, $options);
-        return $hashedPassword;
+        return password_hash($password, PASSWORD_BCRYPT, $options);
     }
 
     private function generateSalt() {
@@ -62,7 +61,7 @@ Class User {
         }
 
         $conn = DbConnection::getConnection();
-        $getUserQuery = 'SELECT * FROM users WHERE email="' . $mail . '" WHERE deleted=0';
+        $getUserQuery = 'SELECT * FROM users WHERE email="' . $mail . '" AND deleted=0';
         $result = $conn->query($getUserQuery);
         if ($result->num_rows == 0) {
             return false;
@@ -93,7 +92,14 @@ Class User {
         }
 
         $connection = DbConnection::getConnection();
-        $updateUserQuery = 'UPDATE users SET username="'.$name.'", email="'.$mail.'" WHERE id="'.$this->id.'")';
+        $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND id="'.$this->id.'" ';
+        $result = $connection->query($sqlIsUser);
+        if ($result->num_rows != 1) {
+            return false;
+        }
+
+        $updateUserQuery = 'UPDATE users SET username="'.$name.'", email="'.$mail.'",
+                        updatedUser="'.date('Y-m-d').'" WHERE id="'.$this->id.'")';
         $result = $connection->query($updateUserQuery);
 
         $connection->close();
@@ -103,8 +109,10 @@ Class User {
 
     public function deleteUser() {
         $conn = DbConnection::getConnection();
-        $getUserQuery = 'UPDATE users SET deleted=1 WHERE id="' . $this->id . '"';
+        $getUserQuery = 'UPDATE users SET updatedUser="'.date('Y-m-d').'", deleted=1 WHERE id="' . $this->id . '"';
         $result = $conn->query($getUserQuery);
+
+        unset($_SESSION['user']);
 
         $conn->close();
         $conn=null;
@@ -125,7 +133,7 @@ Class User {
 
     public function updateUserPassword($oldPassword, $newPassword, $confirmPassword) {
         $conn = DbConnection::getConnection();
-        $getUserQuery = 'SELECT * FROM users WHERE id="' . $this->id . '"';
+        $getUserQuery = 'SELECT * FROM users WHERE deleted=0 id="' . $this->id . '"';
         $result = $conn->query($getUserQuery);
         if ($result->num_rows == 0) {
             return false;
@@ -143,7 +151,8 @@ Class User {
         }
 
         $hashedNewPassword = $this->hashPassword($newPassword);
-        $updateUserQuery = 'UPDATE users SET password="'.$hashedNewPassword.'" WHERE id="'.$this->id.'")';
+        $updateUserQuery = 'UPDATE users SET password="'.$hashedNewPassword.'",
+                            updatedUser="'.date('Y-m-d').'" WHERE id="'.$this->id.'")';
         $result = $conn->query($updateUserQuery);
 
         $conn->close();

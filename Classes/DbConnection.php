@@ -4,7 +4,7 @@
 Class DbConnection {
     private static $serverName = 'localhost';
     private static $userName = 'twitter-root';
-    private static $password = 'axZP447dmDtty6GM';
+    private static $password = '';
     private static $dataBase = 'twitter_db';
 
     public static function getConnection() {

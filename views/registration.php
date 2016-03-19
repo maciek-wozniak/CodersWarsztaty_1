@@ -1,6 +1,6 @@
 <?php
 
-include '../Classes/User.php';
+include_once dirname(__FILE__).'/../Classes/User.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $messageType = 'danger';
@@ -31,17 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-?>
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>myTwitter</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-</head>
-<body>
-
-<?php
 
 if (isset($message) && isset($messageType)) {
     showMessage($message, $messageType);
@@ -98,6 +87,3 @@ function showMessage($text, $type) {
 
     </form>
 </div>
-
-</body>
-</html>
