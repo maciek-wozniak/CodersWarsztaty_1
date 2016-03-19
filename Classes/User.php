@@ -117,14 +117,20 @@ Class User {
         $conn->close();
         $conn=null;
         return $result;
+
+        /*
+         *
+         *  jeszcze usuwanie tweetow i komentarzy do tweetow trzeba dorobic
+         *
+         */
     }
 
     public function getAllMyTweets() {
         $myTweets = array();
 
-        $connection = DbConnection::getConnection();
-        $getTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id=' .$this->id;
-        $result = $connection->query($getTweets);
+        $dbConnection = DbConnection::getConnection();
+        $getTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id=' .$this->id .' ORDER BY id DESC';
+        $result = $dbConnection->query($getTweets);
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $myTweet = new Tweet();
@@ -132,6 +138,8 @@ Class User {
                 $myTweets[$myTweet->getTweetId()] = $myTweet;
             }
         }
+        $dbConnection->close();
+        $dbConnection=null;
         return $myTweets;
     }
 
@@ -172,5 +180,8 @@ Class User {
         return $result;
     }
 
+    public function getId() {
+        return $this->id;
+    }
 
 }

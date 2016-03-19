@@ -47,7 +47,7 @@ if (!$conn) {
                     $arrayMyTweets = $user->getAllMyTweets();
 
                     foreach ($arrayMyTweets as $tweet) {
-                        echo $tweet->getTweetText().'<br>';
+                        echo $tweet->showTweet().'<br>';
                     }
                 }
             ?>
@@ -56,7 +56,16 @@ if (!$conn) {
 
         <!-- Left panel -->
     <div class="row">
-        <div class="col-sm-12" style="background-color: yellow; height: 200px;"></div>
+        <div class="col-sm-12" style="background-color: yellow; height: 200px;">
+
+        <?
+            if (isset($_SESSION['user'])) {
+                include_once dirname(__FILE__).'/views/tweetForm.php';
+            }
+        ?>
+
+
+        </div>
     </div>
 
 
