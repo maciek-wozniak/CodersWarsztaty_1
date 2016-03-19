@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $userObject = new User();
         $userAdd = $userObject -> addUser($email, $password, $username);
         if ($userAdd === true) {
-            $message = 'Użytkownik został dodany. Możesz się teraz zalogować<br><a href="login.php">Zaloguj się</a>';
+            $message = 'Użytkownik został dodany. Możesz się teraz zalogować<br><a href="../">Zaloguj się</a>';
             $messageType = 'success';
         }
         else if ($userAdd == false) {
@@ -41,6 +41,14 @@ function showMessage($text, $type) {
 }
 
 ?>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>myTwitter</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+</head>
+<body>
 
 <div class="well" style="width: 550px; margin: 0 auto; margin-top: 20px;">
     <form class="form-horizontal" method="post" action="registration.php">
@@ -80,8 +88,9 @@ function showMessage($text, $type) {
         </div>
 
         <div class="form-group">
-            <div class="col-sm-offset-5 col-sm-7">
-                <button class="btn btn-info btn-xs" type="submit" name="login">Loguj</button>
+            <div class="col-sm-offset-4 col-sm-8">
+                <button class="btn btn-info btn-xs" type="submit" name="login">Zarejestruj</button>
+                <a class="btn btn-info btn-xs" href="../">Anuluj</a>
             </div>
         </div>
 

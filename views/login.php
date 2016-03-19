@@ -2,6 +2,7 @@
 
 include_once dirname(__FILE__).'/../Classes/User.php';
 
+// logujemy sie
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $messageType = 'danger';
     $email = $_POST['email'];
@@ -10,12 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = "Proszę wypełnić wszystkie pola";
     }
-    else {
+    else { // udalo sie zalogowac
         $userObject = new User();
         $userLogin = $userObject -> login($email, $password);
         if ($userLogin === true) {
 
-            $messageType = 'success';
             unset($userObject);
             unset($userLogin);
             $loggedUser = new User();
@@ -68,8 +68,9 @@ function showMessage($text, $type) {
         </div>
 
         <div class="form-group">
-            <div class="col-sm-offset-5 col-sm-7">
+            <div class="col-sm-offset-4 col-sm-8">
                 <button class="btn btn-info btn-xs" type="submit" name="login">Loguj</button>
+                <a class="btn btn-info btn-xs" href="views/registration.php">Zarejestruj</a>
             </div>
         </div>
 

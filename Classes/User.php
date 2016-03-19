@@ -92,15 +92,37 @@ Class User {
         }
 
         $connection = DbConnection::getConnection();
-        $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND id="'.$this->id.'" ';
+        $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND email="'.$mail.'" ';
+        $result = $connection->query($sqlIsUser);
+        if ($result->num_rows == 1) {
+            echo 'Użytkownik o takim mailu już istnieje<br>';
+            return false;
+        }
+
+        $connection = DbConnection::getConnection();
+        $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND (email="'.$mail.'" OR id="'.$this->id.'") ';
         $result = $connection->query($sqlIsUser);
         if ($result->num_rows != 1) {
             return false;
         }
 
         $updateUserQuery = 'UPDATE users SET username="'.$name.'", email="'.$mail.'",
-                        updatedUser="'.date('Y-m-d').'" WHERE id="'.$this->id.'")';
+                        editedUser="'.date('Y-m-d').'" WHERE id="'.$this->id.'"';
         $result = $connection->query($updateUserQuery);
+
+        if ($result) {
+            $getUserQuery = 'SELECT * FROM users WHERE id="' . $this->id . '" AND deleted=0';
+            $resultUser = $connection->query($getUserQuery);
+            if ($resultUser->num_rows == 0) {
+                return false;
+            }
+            $user = $resultUser->fetch_assoc();
+            unset($_SESSION['user']);
+            $_SESSION['user'] = $user;
+            $loggedUser = new User();
+            unset($_SESSION['user']);
+            $_SESSION['user'] = $loggedUser;
+        }
 
         $connection->close();
         $connection=null;
@@ -152,8 +174,12 @@ Class User {
     }
 
     public function updateUserPassword($oldPassword, $newPassword, $confirmPassword) {
+        if (empty($oldPassword) || empty($newPassword) || empty($confirmPassword)) {
+            return false;
+        }
+
         $conn = DbConnection::getConnection();
-        $getUserQuery = 'SELECT * FROM users WHERE deleted=0 id="' . $this->id . '"';
+        $getUserQuery = 'SELECT * FROM users WHERE deleted=0 AND id="' . $this->id . '"';
         $result = $conn->query($getUserQuery);
         if ($result->num_rows == 0) {
             return false;
@@ -163,17 +189,17 @@ Class User {
 
         $hashedOldPassword = $this->hashPassword($oldPassword);
         if ($hashedOldPassword != $user['password']) {
-            return 'Niepoprawne stare hasło';
+            return false;
         }
 
         if ($newPassword != $confirmPassword) {
-            return 'Hasła nowe różne';
+            return false;
         }
 
         $hashedNewPassword = $this->hashPassword($newPassword);
         $updateUserQuery = 'UPDATE users SET password="'.$hashedNewPassword.'",
-                            updatedUser="'.date('Y-m-d').'" WHERE id="'.$this->id.'")';
-        $result = $conn->query($updateUserQuery);
+                            editedUser="'.date('Y-m-d').'" WHERE id="'.$this->id.'"';
+        $result = $conn->query($updateUserQuery) or die ($conn->error.'<br>'.$updateUserQuery);
 
         $conn->close();
         $conn=null;

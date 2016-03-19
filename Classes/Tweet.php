@@ -41,7 +41,7 @@ Class Tweet {
 
         $dbConnection = DbConnection::getConnection();
         $addTweetSql = 'INSERT INTO tweets (author_id, text, created)
-                          VALUES ("'.$this->authorId.'", "'.$this->tweetText.'", "'.date('Y-m-d').'")';
+                          VALUES ("'.$this->authorId.'", "'.$this->tweetText.'", "'.date('Y-m-d  H:i:s').'")';
         $result = $dbConnection->query($addTweetSql);
         $dbConnection->close();
         $dbConnection=null;
@@ -59,7 +59,7 @@ Class Tweet {
 
         $dbConnection = DbConnection::getConnection();
         $updateTweetSql = 'UPDATE tweets SET text="'.$this->tweetText.'",
-                            updated="'.date('Y-m-d').'" ';
+                            updated="'.date('Y-m-d').'" WHERE id='.$this->getTweetId();
         $result = $dbConnection->query($updateTweetSql);
         $dbConnection->close();
         $dbConnection=null;
@@ -72,12 +72,15 @@ Class Tweet {
         }
 
         $editLink = '';
+        $deleteLink = '';
         if ($this->authorId == $_SESSION['user']->getId()) {
             $editLink = '<a class="btn btn-xs btn-primary" href="index.php?editTweet='.$this->getTweetId().'">Edytuj</a>';
+            $deleteLink = '<a class="btn btn-xs btn-primary" href="index.php?deleteTweet='.$this->getTweetId().'">Usuń</a>';
         }
+        $tweetDate = $this->getCreateDate();
 
         echo '<div class="panel panel-primary">';
-            echo '<div class="panel-heading">Tweet z '.$this->createDate.' '.$editLink.'</div>';
+            echo '<div class="panel-heading">Tweet z '.substr($tweetDate,0,strlen($tweetDate)-3).' '.$editLink.' '.$deleteLink.'</div>';
             echo '<div class="panel-body">'.$this->tweetText.'</div>';
         echo '</div>';
     }
@@ -89,7 +92,7 @@ Class Tweet {
 
         $dbConnection = DbConnection::getConnection();
         $updateTweetSql = 'UPDATE tweets SET deleted=1,
-                            updated="'.date('Y-m-d').'" ';
+                            updated="'.date('Y-m-d').'" WHERE id='.$this->getTweetId();
         $result = $dbConnection->query($updateTweetSql);
         $dbConnection->close();
         $dbConnection=null;

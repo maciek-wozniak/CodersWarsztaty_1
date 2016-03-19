@@ -18,15 +18,30 @@ if (isset($_SESSION['user']) && isset($_GET['updateTweet']) && $_GET['updateTwee
     }
 }
 
+// usuwanie tweetow
+if (isset($_SESSION['user']) && isset($_GET['deleteTweet']) && $_GET['deleteTweet'] > 0 ) {
+    $deleteTweet = new Tweet();
+    $deleteTweet->loadTweetFromDb($_GET['deleteTweet']);
+    if ($_SESSION['user']->getId() == $deleteTweet->getAuthorId()) {
+        if ($deleteTweet->deleteTweet()) {
+            header('Location: index.php');
+        }
+        else {
+            echo 'Nie udało się usunąć tweeta, spróbuj jeszcze raz';
+        }
+    }
+}
+
+
 // dodawanie tweeta
-if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addTweet']) && !isset($_GET['updateTweet'])) {
+if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addTweet']) && !isset($_GET['updateTweet'])  && !isset($_GET['deleteTweet'])) {
     $user = $_SESSION['user'];
     $newTweet = new Tweet();
     $newTweet->setAuthorId($user->getId());
     $newTweet->setTweetText($_POST['tweetText']);
 
     if ($newTweet->createTweetAndAddToDb()) {
-        echo 'Dodano tweeta !';
+        header('Location: index.php');;
     }
     else {
         echo 'Nie udało się dodać, proszę spróbować ponownie';
@@ -61,7 +76,7 @@ if (isset($_GET['editTweet']) && is_numeric($_GET['editTweet']) && $_GET['editTw
 
         <div class="form-group">
             <div class="col-sm-offset-5 col-sm-7">
-                <button class="btn btn-info btn-xs" type="submit" name="addTweet" >Dodaj</button>
+                <button class="btn btn-info btn-xs" type="submit" name="addTweet" ><? if (isset($editedTweet)) echo 'Zmień'; else echo 'Dodaj' ?></button>
             </div>
         </div>
 
