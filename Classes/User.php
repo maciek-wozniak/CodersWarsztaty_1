@@ -364,4 +364,11 @@ Class User {
         return $result;
     }
 
+    public function numberOfUnreadedMessages() {
+        $dbConnection = DbConnection::getConnection();
+        $sqlCount = 'SELECT id FROM messages WHERE readed=0 AND receiver_id='.$this->getUserId().' AND receinver_deleted=0 ';
+        $result = $dbConnection->query($sqlCount);
+        return $result->num_rows;
+    }
+
 }

@@ -33,38 +33,75 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sendMessage'])){
     }
 }
 
+if (isset($_GET['reply']) && is_numeric($_GET['reply'])) {
+    $replyToMsg = new Message();
+    $replyToMsg->loadMessageFromDb($_GET['reply']);
+
+    if ($replyToMsg->getReceiverId() != $_SESSION['user']->getUserId()) {
+        return false;
+    }
+
+    $replyToUser = new User(-1);
+    $replyToUser->loadUserFromDb($replyToMsg->getSenderId());
+}
+
+
 if (isset($message) && isset($messageType)) {
     showMessage($message, $messageType);
 }
 ?>
 
-<div class="well" style="width: 500px; margin: 0 auto; margin-top: 20px;">
+<div class="well" style="width: 900px; margin: 0 auto; margin-top: 20px;">
     <form class="form-horizontal" method="post" action="messagePanel.php">
 
         <div class="form-group ">
-            <div class="col-sm-offset-4 col-sm-7">
+            <div class="col-sm-offset-5 col-sm-7">
                 <strong>Wyślij wiadomość</strong>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-sm-4" for="messageReceiver">Adresat:</label>
+            <label class="control-label col-sm-3" for="messageReceiver">Adresat:</label>
             <div class="col-sm-8">
-                <input type="text" name="messageReceiver" id="messageReceiver" class="form-control" value="<? if (isset($_POST['sendMessage']) && isset($_POST['messageReceiver'])) echo $_POST['messageReceiver'] ?>" />
+                <input type="text" name="messageReceiver" id="messageReceiver" class="form-control"
+                       value="<?
+                            if (isset($_POST['sendMessage']) && isset($_POST['messageReceiver'])) {
+                                echo $_POST['messageReceiver'];
+                            }
+                            else if (isset($replyToUser)) {
+                                echo $replyToUser->getEmail() ;
+                            } ?>" />
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-sm-4" for="messageTitle">Tytuł wiadomości:</label>
+            <label class="control-label col-sm-3" for="messageTitle">Tytuł wiadomości:</label>
             <div class="col-sm-8">
-                <input type="text" name="messageTitle" id="messageTitle" class="form-control" value="<? if (isset($_POST['sendMessage']) && isset($_POST['messageTitle'])) echo $_POST['messageTitle'] ?>" />
+                <input type="text" name="messageTitle" id="messageTitle" class="form-control"
+                       value="<?
+                            if (isset($_POST['sendMessage']) && isset($_POST['messageTitle'])) {
+                                echo $_POST['messageTitle'];
+                            }
+                            else if (isset($replyToMsg)) {
+                                echo 'Re: '.$replyToMsg->getMessageTitle();
+                            } ?>" />
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-sm-4" for="messageText">Treść wiadomości:</label>
+            <label class="control-label col-sm-3" for="messageText">Treść wiadomości:</label>
             <div class="col-sm-8">
-                <textarea name="messageText" id="messageText" class="form-control"><? if (isset($_POST['sendMessage']) && isset($_POST['messageText'])) echo $_POST['messageText'] ?></textarea>
+                <textarea name="messageText" cols="20" rows="10" id="messageText" class="form-control"><?
+                        if (isset($_POST['sendMessage']) && isset($_POST['messageText'])) {
+                            echo $_POST['messageText'];
+                        }
+                        else if (isset($replyToMsg) && isset($_GET['quote']) && $_GET['quote'] == 'yes') {
+                            echo $replyToUser->getUsername();
+                            echo " napisał ".$replyToMsg->getSendTime().":\n";
+                            echo "---------------------------\n";
+                            echo $replyToMsg->getMessageText();
+                        }
+                    ?></textarea>
             </div>
         </div>
 

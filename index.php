@@ -1,6 +1,8 @@
 <?php
 require_once 'Classes/DbConnection.php';
 include_once 'Classes/User.php';
+include_once 'Classes/Message.php';
+
 session_start();
 
 
@@ -27,7 +29,7 @@ if (!$conn) {
 
     <div class="row">
         <!-- First panel -->
-        <div class="col-sm-12" style="background-color: lime; min-height: 100%;"><?php
+        <div class="col-sm-12" style="background-color: lime; padding-bottom: 20px;"><?php
 
             if (isset($_SESSION['user'])) {
                 include_once dirname(__FILE__).'/views/userPanel.php';
@@ -43,7 +45,7 @@ if (!$conn) {
 
         <!-- Second panel -->
     <div class="row">
-        <div class="col-sm-12" style="background-color: red; height: 200px;">
+        <div class="col-sm-12" style="margin-top: 10px;">
             <?php
                 if (isset($_SESSION['user'])) {
                     $arrayMyTweets = $user->getAllMyTweets();
@@ -58,7 +60,7 @@ if (!$conn) {
 
         <!-- Next panel -->
     <div class="row">
-        <div class="col-sm-12" style="background-color: yellow; height: 200px;">
+        <div class="col-sm-12">
 
         <?
             if (isset($_SESSION['user'])) {

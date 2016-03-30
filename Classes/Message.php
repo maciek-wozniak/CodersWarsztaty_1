@@ -89,6 +89,7 @@ Class Message {
             return false;
         }
 
+        $this->readed = 1;
         $dbConnection = DbConnection::getConnection();
         $readedSql = 'UPDATE messages SET readed=1 WHERE id='.$this->getMessageId();
 

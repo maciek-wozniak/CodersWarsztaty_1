@@ -31,13 +31,13 @@ foreach ($sentMessages as $msg) {
     ?>
     <tr data-toggle="collapse" data-target=".msg<? echo $msg->getMessageId(); ?>" style="cursor: pointer;">
         <td><? echo $i ?></td>
-        <td><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></td>
+        <td><a href="userInfo.php?id=<? echo $usr->getUserId() ?>"><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></a></td>
         <td><? echo $msg->getMessageTitle() ?></td>
         <td><? echo $msg->getSendTime() ?></td>
     </tr>
 
     <tr class="collapse msg<? echo $msg->getMessageId(); ?>">
-        <td colspan="4"><? echo $msg->getMessageText() ?></td>
+        <td colspan="4"><? echo nl2br($msg->getMessageText()) ?></td>
     </tr>
 
     <tr class="collapse msg<? echo $msg->getMessageId(); ?>">
