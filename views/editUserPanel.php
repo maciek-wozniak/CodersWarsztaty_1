@@ -3,19 +3,39 @@
 include_once dirname(__FILE__).'/../Classes/User.php';
 
 session_start();
-
 if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
 }
+else {
+    return false;
+}
 
+function showMessage($text, $type) {
+    echo '<div class="alert alert-'.$type.'" role="alert" style="width: 400px; margin: 0 auto; margin-top: 20px;">'.$text.'</div>';
+}
 
+if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteAccount'])) {
+    if ($user->deleteUser($_POST['password'])) {
+        echo 'hhhh';
+        header('Location: ../');
+    }
+    else if (empty($_POST['password'])){
+        $message = 'Nie podano hasła';
+        $messageType = 'danger';
+    }
+    else {
+        $message = 'Nie udało się usunąć konta';
+        $messageType = 'danger';
+    }
+}
 
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changeUserName'])) {
     if ($user->updateUser($_POST['email'], $_POST['username'])) {
         header('Location: ../');
     }
     else {
-        echo 'Nie udało się zmienić danych, spróbuj jeszcze raz';
+        $message = 'Nie udało się zmienić danych, spróbuj jeszcze raz';
+        $messageType = 'danger';
     }
 }
 
@@ -23,9 +43,18 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chang
     if ($user->updateUserPassword($_POST['password'], $_POST['newPassword'], $_POST['confirmPassword'])) {
         header('Location: ../');
     }
-    else {
-        echo 'Nie udało się zmienić hasła, spróbuj jeszcze raz';
+    else if ($_POST['newPassword'] !=  $_POST['confirmPassword']) {
+        $message = 'Nie udało się zmienić hasła, powtórzone hasło nie jest takie samo jak nowe';
+        $messageType = 'danger';
     }
+    else {
+        $message = 'Nie udało się zmienić hasła, spróbuj jeszcze raz';
+        $messageType = 'danger';
+    }
+}
+
+if (isset($message) && isset($messageType)) {
+    showMessage($message, $messageType);
 }
 
 ?>
@@ -36,6 +65,8 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chang
     <meta charset="UTF-8">
     <title>myTwitter</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 </head>
 <body>
 
@@ -112,3 +143,30 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chang
 
     </form>
 </div>
+
+<div class="alert alert-danger" style="width: 550px; margin: 0 auto; margin-top: 20px;">
+    <form class="form-horizontal" method="post" action="">
+
+        <div class="form-group ">
+            <div data-toggle="collapse" data-target=".deleteAccount" class="col-sm-offset-5 col-sm-7">
+                <strong style="cursor: pointer;">Usuń konto</strong>
+            </div>
+        </div>
+
+        <div class="form-group collapse deleteAccount" >
+            <label class="control-label col-sm-4" for="password">Hasło:</label>
+            <div class="col-sm-8">
+                <input type="password" style="width:300px;" name="password" id="password" maxlength="255" placeholder="Podaj swoje hasło" class="form-control" value=""/>
+            </div>
+        </div>
+
+
+        <div class="form-group collapse deleteAccount" >
+            <div class="col-sm-offset-4 col-sm-8">
+                <button class="btn btn-warning btn-xs" type="submit" name="deleteAccount">Usuń konto</button>
+                <a class="btn btn-info btn-xs" href="../">Anuluj</a>
+            </div>
+        </div>
+
+    </form>
+</div><br>

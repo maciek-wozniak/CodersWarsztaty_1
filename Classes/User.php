@@ -94,7 +94,7 @@ Class User {
         $connection = DbConnection::getConnection();
         $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND email="'.$mail.'" ';
         $result = $connection->query($sqlIsUser);
-        if ($result->num_rows == 1) {
+        if ($result->num_rows == 1 && !($this->email == $mail)) {
             echo 'Użytkownik o takim mailu już istnieje<br>';
             return false;
         }
@@ -131,11 +131,10 @@ Class User {
 
     public function deleteUser() {
         $conn = DbConnection::getConnection();
-        $getUserQuery = 'UPDATE users SET updatedUser="'.date('Y-m-d').'", deleted=1 WHERE id="' . $this->id . '"';
-        $result = $conn->query($getUserQuery);
+        $getUserQuery = 'UPDATE users SET editedUser="'.date('Y-m-d').'", deleted=1 WHERE id="' . $this->id . '"';
+        $result = $conn->query($getUserQuery) or die($conn->error);
 
         unset($_SESSION['user']);
-
         $conn->close();
         $conn=null;
         return $result;

@@ -8,10 +8,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    if (empty($email) || empty($password) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (empty($email) || empty($password)) {
         $message = "Proszę wypełnić wszystkie pola";
     }
-    else { // udalo sie zalogowac
+    else  if ( !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message = 'Proszę podać prawidłowy e-mail';
+    }
+
+    else{ // udalo sie zalogowac
         $userObject = new User();
         $userLogin = $userObject -> login($email, $password);
         if ($userLogin === true) {
