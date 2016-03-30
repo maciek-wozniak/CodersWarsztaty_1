@@ -26,7 +26,7 @@ if (!$conn) {
 <div class="container">
 
     <div class="row">
-        <!-- Left panel -->
+        <!-- First panel -->
         <div class="col-sm-12" style="background-color: lime; min-height: 100%;"><?php
 
             if (isset($_SESSION['user'])) {
@@ -41,7 +41,7 @@ if (!$conn) {
     </div>
 
 
-        <!-- Main panel -->
+        <!-- Second panel -->
     <div class="row">
         <div class="col-sm-12" style="background-color: red; height: 200px;">
             <?php
@@ -56,7 +56,7 @@ if (!$conn) {
         </div>
     </div>
 
-        <!-- Left panel -->
+        <!-- Next panel -->
     <div class="row">
         <div class="col-sm-12" style="background-color: yellow; height: 200px;">
 

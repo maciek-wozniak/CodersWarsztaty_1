@@ -61,7 +61,7 @@ Class Tweet {
             return false;
         }
 
-        if (!isset($_SESSION['user']) || $_SESSION['user']->getId() != $this->authorId) {
+        if (!isset($_SESSION['user']) || $_SESSION['user']->getUserId() != $this->authorId) {
             return false;
         }
 
@@ -87,7 +87,7 @@ Class Tweet {
         $commentsLink = '';
         $commentsLink = '<a href="'.ROOT_PATH.'/views/tweetComments.php?id=' . $this->tweetId . '" style="color:white;">Komentarzy: [' . $this->numberOfComments() . ']</a>';
 
-        if ($this->authorId == $_SESSION['user']->getId()) {
+        if ($this->authorId == $_SESSION['user']->getUserId()) {
             $editLink = '<a class="btn btn-xs btn-primary" href="'.ROOT_PATH.'/index.php?editTweet='.$this->getTweetId().'">Edytuj</a>';
             $deleteLink = '<a class="btn btn-xs btn-primary" href="'.ROOT_PATH.'/index.php?deleteTweet='.$this->getTweetId().'">Usuń</a>';
         }
@@ -101,7 +101,7 @@ Class Tweet {
     }
 
     public function deleteTweet() {
-        if (!isset($_SESSION['user']) || $_SESSION['user']->getId() != $this->authorId) {
+        if (!isset($_SESSION['user']) || $_SESSION['user']->getUserId() != $this->authorId) {
             return false;
         }
 

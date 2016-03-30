@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addComment']) &&
     isset($_POST['commentText']) && strlen($_POST['commentText'])>1 ) {
 
     $tweetComment = new TweetComment();
-    $tweetComment->setAuthorId($_SESSION['user']->getId());
+    $tweetComment->setAuthorId($_SESSION['user']->getUserId());
     $tweetComment->setCommentText($_POST['commentText']);
     $tweetComment->setTweetId($id);
 
@@ -112,7 +112,7 @@ function showMessage($text, $type) {
 
 
         <div class="well" style="width: 500px; margin: 0 auto; margin-top: 20px;">
-            <form class="form-horizontal" method="post" action="tweetComments.php?id=<? echo $id; if (isset($editedComment)) echo '&editComment='.$editedComment->getId() ?>">
+            <form class="form-horizontal" method="post" action="tweetComments.php?id=<? echo $id; if (isset($editedComment)) echo '&editComment='.$editedComment->getCommentId() ?>">
 
                 <div class="form-group ">
                     <div class="col-sm-offset-4 col-sm-7">

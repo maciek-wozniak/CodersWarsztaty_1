@@ -5,7 +5,7 @@ if (!defined('ROOT_PATH')) {
 }
 
 Class TweetComment {
-    private $id;
+    private $commentId;
     private $tweetId;
     private $authorId;
     private $commentText;
@@ -13,15 +13,15 @@ Class TweetComment {
 
 
     public function __construct() {
-        $this->id = -1;
+        $this->commentId = -1;
         $this->tweetId = -1;
         $this->authorId = -1;
         $this->commentText = '';
         $this->creationDate = '';
     }
 
-    public function getId() {
-        return $this->id;
+    public function getCommentId() {
+        return $this->commentId;
     }
 
     public function getTweetId() {
@@ -65,7 +65,7 @@ Class TweetComment {
         }
         else {
             $dbComment = $result->fetch_assoc();
-            $this->id = $dbComment['id'];
+            $this->commentId = $dbComment['id'];
             $this->tweetId = $dbComment['tweet_id'];
             $this->authorId = $dbComment['author_id'];
             $this->creationDate = $dbComment['creation_date'];
@@ -97,13 +97,13 @@ Class TweetComment {
             return false;
         }
 
-        if (!isset($_SESSION['user']) || $_SESSION['user']->getId() != $this->authorId) {
+        if (!isset($_SESSION['user']) || $_SESSION['user']->getUserId() != $this->authorId) {
             return false;
         }
 
         $dbConnection = DbConnection::getConnection();
         $updateCommentSql = 'UPDATE tweet_comments SET text="'.$this->commentText.'"
-                            WHERE id='.$this->getId();
+                            WHERE id='.$this->getCommentId();
         $result = $dbConnection->query($updateCommentSql);
         $dbConnection->close();
         $dbConnection=null;
@@ -111,12 +111,12 @@ Class TweetComment {
     }
 
     public function deleteComment() {
-        if (!isset($_SESSION['user']) || $_SESSION['user']->getId() != $this->authorId) {
+        if (!isset($_SESSION['user']) || $_SESSION['user']->getUserId() != $this->authorId) {
             return false;
         }
 
         $dbConnection = DbConnection::getConnection();
-        $updateCommentSql = 'UPDATE tweet_comments SET deleted=1  WHERE id='.$this->getId();
+        $updateCommentSql = 'UPDATE tweet_comments SET deleted=1  WHERE id='.$this->getCommentId();
         $result = $dbConnection->query($updateCommentSql);
         $dbConnection->close();
         $dbConnection=null;
@@ -133,9 +133,9 @@ Class TweetComment {
 
         $editLink = '';
         $deleteLink = '';
-        if ($this->authorId == $_SESSION['user']->getId()) {
-            $editLink = '<a class="btn btn-xs btn-info" href="tweetComments.php?id='.$this->tweetId.'&editComment='.$this->getId().'">Edytuj</a>';
-            $deleteLink = '<a class="btn btn-xs btn-info" href="tweetComments.php?id='.$this->tweetId.'&deleteComment='.$this->getId().'">Usuń</a>';
+        if ($this->authorId == $_SESSION['user']->getUserId()) {
+            $editLink = '<a class="btn btn-xs btn-info" href="tweetComments.php?id='.$this->tweetId.'&editComment='.$this->getCommentId().'">Edytuj</a>';
+            $deleteLink = '<a class="btn btn-xs btn-info" href="tweetComments.php?id='.$this->tweetId.'&deleteComment='.$this->getCommentId().'">Usuń</a>';
         }
         $commenttDate = $this->getCreationDate();
 

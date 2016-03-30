@@ -22,7 +22,8 @@ if (isset($_SESSION['user'])) {
 
 ?>
 Witaj <? echo $user->email . ' ' . $user->username ?><br>
-<a class="btn btn-primary btn-xs" href="views/editUserPanel.php">Edytuj profil</a> <br>
+<a class="btn btn-primary btn-xs" href="views/editUserPanel.php">Edytuj profil</a>
+<a class="btn btn-primary btn-xs" href="views/messagePanel.php" style="margin: 5px; margin-left: 0px;">Wiadomości</a>
 <a class="btn btn-primary btn-xs" href="?login=false" style="margin: 5px; margin-left: 0px;">Wyloguj</a>
 
 

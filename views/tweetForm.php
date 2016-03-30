@@ -7,7 +7,7 @@ if (isset($_SESSION['user']) && isset($_GET['updateTweet']) && $_GET['updateTwee
     $_SERVER['REQUEST_METHOD'] === 'POST' && strlen($_POST['tweetText'])<=140) {
     $updateTweet = new Tweet();
     $updateTweet->loadTweetFromDb($_GET['updateTweet']);
-    if ($_SESSION['user']->getId() == $updateTweet->getAuthorId()) {
+    if ($_SESSION['user']->getUserId() == $updateTweet->getAuthorId()) {
         $updateTweet->setTweetText($_POST['tweetText']);
 
         if ($updateTweet->updateTweet()) {
@@ -26,7 +26,7 @@ else if (isset($_GET['updateTweet']) && strlen($_POST['tweetText'])>140){
 if (isset($_SESSION['user']) && isset($_GET['deleteTweet']) && $_GET['deleteTweet'] > 0 ) {
     $deleteTweet = new Tweet();
     $deleteTweet->loadTweetFromDb($_GET['deleteTweet']);
-    if ($_SESSION['user']->getId() == $deleteTweet->getAuthorId()) {
+    if ($_SESSION['user']->getUserId() == $deleteTweet->getAuthorId()) {
         if ($deleteTweet->deleteTweet()) {
             header('Location: index.php');
         }
@@ -42,7 +42,7 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
     !isset($_GET['updateTweet'])  && !isset($_GET['deleteTweet']) && strlen($_POST['tweetText'])<=140) {
     $user = $_SESSION['user'];
     $newTweet = new Tweet();
-    $newTweet->setAuthorId($user->getId());
+    $newTweet->setAuthorId($user->getUserId());
     $newTweet->setTweetText($_POST['tweetText']);
 
     if ($newTweet->createTweetAndAddToDb()) {
@@ -60,7 +60,7 @@ else if (isset($_POST['addTweet']) && strlen($_POST['tweetText'])>140){
 if (isset($_GET['editTweet']) && is_numeric($_GET['editTweet']) && $_GET['editTweet'] > 0 && isset($_SESSION['user'])) {
     $editedTweet = new Tweet();
     $editedTweet->loadTweetFromDb($_GET['editTweet']);
-    if ($editedTweet->getAuthorId() != $_SESSION['user']->getiD()) {
+    if ($editedTweet->getAuthorId() != $_SESSION['user']->getUserId()) {
         unset($editedTweet);
     }
 }
