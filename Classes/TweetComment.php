@@ -1,5 +1,8 @@
 <?php
 include_once dirname(__FILE__).'/DbConnection.php';
+if (!defined('ROOT_PATH')) {
+    define('ROOT_PATH', 'http://' . $_SERVER['HTTP_HOST'] . '/CodersWarsztaty_1');
+}
 
 Class TweetComment {
     private $id;
@@ -100,7 +103,7 @@ Class TweetComment {
 
         $dbConnection = DbConnection::getConnection();
         $updateCommentSql = 'UPDATE tweet_comments SET text="'.$this->commentText.'"
-                            WHERE id='.$this->getTweetId();
+                            WHERE id='.$this->getId();
         $result = $dbConnection->query($updateCommentSql);
         $dbConnection->close();
         $dbConnection=null;
@@ -113,7 +116,7 @@ Class TweetComment {
         }
 
         $dbConnection = DbConnection::getConnection();
-        $updateCommentSql = 'UPDATE tweet_comments SET deleted=1  WHERE id='.$this->getTweetId();
+        $updateCommentSql = 'UPDATE tweet_comments SET deleted=1  WHERE id='.$this->getId();
         $result = $dbConnection->query($updateCommentSql);
         $dbConnection->close();
         $dbConnection=null;
@@ -124,17 +127,21 @@ Class TweetComment {
         if (!isset($_SESSION)) {
             return false;
         }
+        $author = new User($this->authorId);
+        $author->loadUserFromDb($this->authorId);
+        $commentAuthor = $author->linkToUser();
 
         $editLink = '';
         $deleteLink = '';
         if ($this->authorId == $_SESSION['user']->getId()) {
-            $editLink = '<a class="btn btn-xs btn-info" href="index.php?editComment='.$this->getId().'">Edytuj</a>';
-            $deleteLink = '<a class="btn btn-xs btn-info" href="index.php?deleteComment='.$this->getId().'">Usuń</a>';
+            $editLink = '<a class="btn btn-xs btn-info" href="tweetComments.php?id='.$this->tweetId.'&editComment='.$this->getId().'">Edytuj</a>';
+            $deleteLink = '<a class="btn btn-xs btn-info" href="tweetComments.php?id='.$this->tweetId.'&deleteComment='.$this->getId().'">Usuń</a>';
         }
         $commenttDate = $this->getCreationDate();
 
         echo '<div class="panel panel-info">';
-        echo '<div class="panel-heading">Tweet z '.substr($commenttDate,0,strlen($commenttDate)-3).' '.$editLink.' '.$deleteLink.'</div>';
+        echo '<div class="panel-heading">Komentarz ' .$commentAuthor. ' z '
+                .substr($commenttDate,0,strlen($commenttDate)-3).' '.$editLink.' '.$deleteLink.'</div>';
         echo '<div class="panel-body">'.$this->commentText.'</div>';
         echo '</div>';
     }

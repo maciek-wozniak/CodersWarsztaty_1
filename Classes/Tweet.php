@@ -2,7 +2,9 @@
 include_once dirname(__FILE__).'/DbConnection.php';
 include_once dirname(__FILE__).'/User.php';
 include_once dirname(__FILE__).'/TweetComment.php';
-define('ROOT_PATH', 'http://'.$_SERVER['HTTP_HOST'].'/CodersWarsztaty_1');
+if (!defined('ROOT_PATH')) {
+    define('ROOT_PATH', 'http://' . $_SERVER['HTTP_HOST'] . '/CodersWarsztaty_1');
+}
 
 
 Class Tweet {
@@ -25,7 +27,7 @@ Class Tweet {
         $sqlGetTweet = 'SELECT * FROM tweets WHERE deleted=0 AND id='.$id;
         $result = $dbConnection->query($sqlGetTweet);
         if ($result->num_rows!=1) {
-            return null;
+            return false;
         }
         else {
             $dbTweet = $result->fetch_assoc();
@@ -37,6 +39,7 @@ Class Tweet {
         }
         $dbConnection->close();
         $dbConnection=null;
+        return $result;
     }
 
     public function createTweetAndAddToDb() {
@@ -75,6 +78,9 @@ Class Tweet {
         if (!isset($_SESSION)) {
             return false;
         }
+        $author = new User($this->authorId);
+        $author->loadUserFromDb($this->authorId);
+        $tweetAuthorLink = $author->linkToUser('white');
 
         $editLink = '';
         $deleteLink = '';
@@ -88,7 +94,7 @@ Class Tweet {
         $tweetDate = $this->getCreateDate();
 
         echo '<div class="panel panel-primary">';
-            echo '<div class="panel-heading">Tweet z '.substr($tweetDate,0,strlen($tweetDate)-3).' '
+            echo '<div class="panel-heading">Tweet '.$tweetAuthorLink.' z '.substr($tweetDate,0,strlen($tweetDate)-3).' '
                     .$editLink.' '.$deleteLink.' '.$commentsLink.'</div>';
             echo '<div class="panel-body">'.$this->tweetText.'</div>';
         echo '</div>';

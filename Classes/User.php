@@ -10,18 +10,47 @@ Class User {
     public $email;
     public $username;
 
-    public function __construct() {
+    public function __construct($id = NULL) {
         if (session_status() != PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        if (!empty($_SESSION['user'])) {
+        if (!empty($_SESSION['user']) && $id == NULL) {
             $user = $_SESSION['user'];
             $this->id = $user['id'];
             $this->email = $user['email'];
             $this->username = $user['username'];
             $this->salt = $user['salt'];
         }
+        else if ($id != NULL) {
+            $this->id = -1;
+            $this->email = '';
+            $this->username = '';
+        }
+    }
+
+    public function loadUserFromDb($id) {
+        $sqlUser = 'SELECT * FROM users WHERE deleted=0 AND id='.$id;
+        $conn = DbConnection::getConnection();
+        $result = $conn->query($sqlUser);
+        if ($result->num_rows!=1) {
+            return false;
+        }
+        else {
+            $user = $result->fetch_assoc();
+            $this->id = $user['id'];
+            $this->email = $user['email'];
+            $this->username = $user['username'];
+            $this->salt = $user['salt'];
+        }
+    }
+
+    public function getUsername() {
+        return $this->username;
+    }
+
+    public function getEmail() {
+        return $this->email;
     }
 
     public function addUser($mail, $password, $name = null) {
@@ -207,6 +236,21 @@ Class User {
 
     public function getId() {
         return $this->id;
+    }
+
+    public function linkToUser($color = null) {
+        $link = '';
+        if ($color) {
+            $color = ' style="color: '.$color.';"';
+        }
+
+        if (!empty($this->getUsername())) {
+            $link = '<a href="'.ROOT_PATH.'/views/userInfo.php?id='.$this->id.'"'.$color.'>'.$this->getUsername().'</a>';
+        }
+        else {
+            $link = '<a href="'.ROOT_PATH.'/views/userInfo.php?id='.$this->id.'"'.$color.'>'.$this->getEmail().'</a>';
+        }
+        return $link;
     }
 
 }
