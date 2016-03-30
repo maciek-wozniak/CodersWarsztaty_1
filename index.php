@@ -71,7 +71,6 @@ if (!$conn) {
     </div>
 
 
-    </div>
 
 </div>
 

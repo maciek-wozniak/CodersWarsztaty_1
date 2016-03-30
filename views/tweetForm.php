@@ -3,7 +3,8 @@
 include_once dirname(__FILE__).'/../Classes/Tweet.php';
 
 // edytowanie tweetow
-if (isset($_SESSION['user']) && isset($_GET['updateTweet']) && $_GET['updateTweet'] > 0 && $_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_SESSION['user']) && isset($_GET['updateTweet']) && $_GET['updateTweet'] > 0 &&
+    $_SERVER['REQUEST_METHOD'] === 'POST' && strlen($_POST['tweetText'])<=140) {
     $updateTweet = new Tweet();
     $updateTweet->loadTweetFromDb($_GET['updateTweet']);
     if ($_SESSION['user']->getId() == $updateTweet->getAuthorId()) {
@@ -16,6 +17,9 @@ if (isset($_SESSION['user']) && isset($_GET['updateTweet']) && $_GET['updateTwee
             echo 'Nie udało się zmienić tweeta, spróbuj jeszcze raz';
         }
     }
+}
+else if (isset($_GET['updateTweet']) && strlen($_POST['tweetText'])>140){
+    echo 'Nie udało się dodać tweeta - tekst jest za długi';
 }
 
 // usuwanie tweetow
@@ -34,7 +38,8 @@ if (isset($_SESSION['user']) && isset($_GET['deleteTweet']) && $_GET['deleteTwee
 
 
 // dodawanie tweeta
-if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addTweet']) && !isset($_GET['updateTweet'])  && !isset($_GET['deleteTweet'])) {
+if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addTweet']) &&
+    !isset($_GET['updateTweet'])  && !isset($_GET['deleteTweet']) && strlen($_POST['tweetText'])<=140) {
     $user = $_SESSION['user'];
     $newTweet = new Tweet();
     $newTweet->setAuthorId($user->getId());
@@ -46,6 +51,9 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
     else {
         echo 'Nie udało się dodać, proszę spróbować ponownie';
     }
+}
+else if (isset($_POST['addTweet']) && strlen($_POST['tweetText'])>140){
+    echo 'Nie udało się dodać tweeta - tekst jest za długi';
 }
 
 // wczytywanie tweeta do edycji

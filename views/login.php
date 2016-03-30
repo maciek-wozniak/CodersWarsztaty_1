@@ -3,7 +3,7 @@
 include_once dirname(__FILE__).'/../Classes/User.php';
 
 // logujemy sie
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $messageType = 'danger';
     $email = $_POST['email'];
     $password = $_POST['password'];

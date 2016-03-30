@@ -150,7 +150,7 @@ Class User {
         $myTweets = array();
 
         $dbConnection = DbConnection::getConnection();
-        $getTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id=' .$this->id .' ORDER BY id DESC';
+        $getTweets = 'SELECT id FROM tweets WHERE deleted=0 AND author_id=' .$this->id .' ORDER BY id DESC';
         $result = $dbConnection->query($getTweets);
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {

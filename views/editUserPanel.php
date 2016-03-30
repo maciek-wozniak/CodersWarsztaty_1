@@ -16,7 +16,6 @@ function showMessage($text, $type) {
 
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteAccount'])) {
     if ($user->deleteUser($_POST['password'])) {
-        echo 'hhhh';
         header('Location: ../');
     }
     else if (empty($_POST['password'])){

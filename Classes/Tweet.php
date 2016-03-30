@@ -1,4 +1,9 @@
 <?php
+include_once dirname(__FILE__).'/DbConnection.php';
+include_once dirname(__FILE__).'/User.php';
+include_once dirname(__FILE__).'/TweetComment.php';
+define('ROOT_PATH', 'http://'.$_SERVER['HTTP_HOST'].'/CodersWarsztaty_1');
+
 
 Class Tweet {
     private $tweetId;
@@ -73,14 +78,18 @@ Class Tweet {
 
         $editLink = '';
         $deleteLink = '';
+        $commentsLink = '';
+        $commentsLink = '<a href="'.ROOT_PATH.'/views/tweetComments.php?id=' . $this->tweetId . '" style="color:white;">Komentarzy: [' . $this->numberOfComments() . ']</a>';
+
         if ($this->authorId == $_SESSION['user']->getId()) {
-            $editLink = '<a class="btn btn-xs btn-primary" href="index.php?editTweet='.$this->getTweetId().'">Edytuj</a>';
-            $deleteLink = '<a class="btn btn-xs btn-primary" href="index.php?deleteTweet='.$this->getTweetId().'">Usuń</a>';
+            $editLink = '<a class="btn btn-xs btn-primary" href="'.ROOT_PATH.'/index.php?editTweet='.$this->getTweetId().'">Edytuj</a>';
+            $deleteLink = '<a class="btn btn-xs btn-primary" href="'.ROOT_PATH.'/index.php?deleteTweet='.$this->getTweetId().'">Usuń</a>';
         }
         $tweetDate = $this->getCreateDate();
 
         echo '<div class="panel panel-primary">';
-            echo '<div class="panel-heading">Tweet z '.substr($tweetDate,0,strlen($tweetDate)-3).' '.$editLink.' '.$deleteLink.'</div>';
+            echo '<div class="panel-heading">Tweet z '.substr($tweetDate,0,strlen($tweetDate)-3).' '
+                    .$editLink.' '.$deleteLink.' '.$commentsLink.'</div>';
             echo '<div class="panel-body">'.$this->tweetText.'</div>';
         echo '</div>';
     }
@@ -100,7 +109,21 @@ Class Tweet {
     }
 
     public function getAllComments() {
+        $dbConnection = DbConnection::getConnection();
+        $sqlComments = 'SELECT id FROM tweet_comments WHERE deleted=0 AND tweet_id='.$this->tweetId.' ORDER BY creation_date DESC';
+        $result = $dbConnection->query($sqlComments);
+        while ($row = $result->fetch_assoc() ) {
+            $comment = new TweetComment();
+            $comment->loadCommentFromDb($row['id']);
+            $comment->showComment();
+        }
+    }
 
+    public function numberOfComments() {
+        $dbConnection = DbConnection::getConnection();
+        $sqlCount = 'SELECT id FROM tweet_comments WHERE tweet_id='.$this->tweetId.' AND deleted=0 ';
+        $result = $dbConnection->query($sqlCount);
+        return $result->num_rows;
     }
 
     public function getTweetId() {
