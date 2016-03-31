@@ -1,7 +1,4 @@
 <?php
-//include_once dirname(__FILE__).'/DbConnection.php';
-//include_once dirname(__FILE__).'/User.php';
-//include_once dirname(__FILE__).'/TweetComment.php';
 
 require_once 'allClasses.php';
 
@@ -25,8 +22,25 @@ Class Tweet {
         $this->isDeleted = 0;
     }
 
-    static public function GetAllUserTweets($dbConnection, $userId){
+    static public function GetAllUserTweets(mysqli $conn, $userId){
+        $allTweets = [];
+        $sqlTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id='.$userId;
+        $result = $conn->query($sqlTweets);
 
+        if ($result !== false) {
+            if ($result->num_rows>0) {
+                while ($row = $result->fetch_assoc()) {
+                    $tweet = new Tweet();
+                    $tweet->tweetId = $row['id'];
+                    $tweet->setAuthorId($row['author_id']);
+                    $tweet->setTweetText($row['tweet_text']);
+                    $tweet->setCreateDate($row['created']);
+                    $allTweets[] = $tweet;
+                }
+            }
+        }
+
+        return $allTweets;
     }
 
     public function loadTweetFromDb(mysqli $conn, $id){
@@ -92,7 +106,7 @@ Class Tweet {
         }
         $tweetDate = $this->getCreateDate();
 
-        echo '<div class="panel panel-primary">';
+        echo '<div class="panel panel-primary" style="width: 500px;margin: 0 auto;">';
             echo '<div class="panel-heading">Tweet '.$tweetAuthorLink.' z '.substr($tweetDate,0,strlen($tweetDate)-3).' '
                     .$editLink.' '.$deleteLink.' '.$commentsLink.'</div>';
             echo '<div class="panel-body">'.$this->tweetText.'</div>';
@@ -111,19 +125,11 @@ Class Tweet {
     }
 
     public function getAllComments(mysqli $conn) {
-        $sqlComments = 'SELECT id FROM tweet_comments WHERE deleted=0 AND tweet_id='.$this->tweetId.' ORDER BY creation_date DESC';
-        $result = $conn->query($sqlComments);
-        while ($row = $result->fetch_assoc() ) {
-            $comment = new TweetComment();
-            $comment->loadCommentFromDb($conn, $row['id']);
-            $comment->showComment($conn);
-        }
+        TweetComment::GetAllTweetComments($conn, $this->getTweetId());
     }
 
     public function numberOfComments(mysqli $conn) {
-        $sqlCount = 'SELECT id FROM tweet_comments WHERE tweet_id='.$this->tweetId.' AND deleted=0 ';
-        $result = $conn->query($sqlCount);
-        return $result->num_rows;
+        TweetComment::GetNumberOfTweetComments($conn, $this->getTweetId());
     }
 
     public function getTweetId() {

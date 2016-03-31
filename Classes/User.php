@@ -1,22 +1,14 @@
 <?php
 
-//include_once dirname(__FILE__).'/DbConnection.php';
-//include_once dirname(__FILE__).'/Tweet.php';
-//include_once dirname(__FILE__).'/Message.php';
-
 require_once 'allClasses.php';
 
 Class User {
     private $userId;
     private $salt;
-    public $email;
-    public $username;
-    // statyczne metody dodac np. pobieranie tweetow danego usera w klasie tweeter
-    public function __construct() {
-        if (session_status() != PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+    private $email;
+    private $username;
 
+    public function __construct() {
         $this->userId = -1;
         $this->email = '';
         $this->username = '';
@@ -52,8 +44,6 @@ Class User {
     public function setEmail($email) {
         $this->email = $email;
     }
-
-
 
     public function addUser(mysqli $connection, $mail, $password, $name = null) {
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL) || empty($password)) {
@@ -96,7 +86,6 @@ Class User {
             return false;
         }
         $user = $result->fetch_assoc();
-
 
         if (!password_verify($password, $user['password'])) {
             return false;
@@ -147,7 +136,9 @@ Class User {
             $user = $resultUser->fetch_assoc();
             unset($_SESSION['user']);
             $loggedUser = new User();
-            $loggedUser->loadUserFromDb($connection, $user['id']);
+            $loggedUser->userId = $user['id'];
+            $loggedUser->setEmail($user['email']);
+            $loggedUser->setUsername($user['username']);
             $_SESSION['user'] = $loggedUser;
         }
 
@@ -201,61 +192,23 @@ Class User {
     }
 
     public function getAllMyTweets(mysqli $conn) {
-        $myTweets = array();
-
-        $getTweets = 'SELECT id FROM tweets WHERE deleted=0 AND author_id=' .$this->userId .' ORDER BY id DESC';
-        $result = $conn->query($getTweets);
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $myTweet = new Tweet();
-                $myTweet->loadTweetFromDb($conn, $row['id']);
-                $myTweets[$myTweet->getTweetId()] = $myTweet;
-            }
-        }
-        return $myTweets;
+        return Tweet::GetAllUserTweets($conn, $this->getUserId());
     }
 
     public function getAllMyComments(mysqli $conn) {
-        $comments = [];
-        $getCommentsSql = 'SELECT * FROM tweet_comments WHERE deleted=0 AND author_id='.$this->getUserId();
-        $result = $conn->query($getCommentsSql);
-
-        while ($row = $result->fetch_assoc()) {
-            $comment = new TweetComment();
-            $comment->loadCommentFromDb($conn, $row['id']);
-            $comments[$comment->getCommentId()] = $comment;
-        }
-
-        return $comments;
+        return TweetComment::GetAllUserComments($conn, $this->getUserId());
     }
 
     public function getSentMessages(mysqli $conn) {
-        $messages = [];
-        $getMessagesSentSql = 'SELECT * FROM messages WHERE sender_deleted=0 AND sender_id='.$this->getUserId();
-        $result = $conn->query($getMessagesSentSql);
-
-        while ($row = $result->fetch_assoc()) {
-            $sentMsg = new Message();
-            $sentMsg->loadMessageFromDb($conn, $row['id']);
-            $messages[$sentMsg->getMessageId()] = $sentMsg;
-        }
-
-        return $messages;
+        return Message::GetAllSendUserMessages($conn, $this->getUserId());
     }
 
     public function getReceivedMessages(mysqli $conn) {
-        $messages = [];
-        $getMessagesReceivedSql = 'SELECT * FROM messages WHERE receinver_deleted=0 AND receiver_id='.$this->getUserId();
-        $result = $conn->query($getMessagesReceivedSql);
+        return Message::GetAllReceivedUserMessages($conn, $this->getUserId());
+    }
 
-        while ($row = $result->fetch_assoc())  {
-            $receivedMsg = new Message();
-            $receivedMsg->loadMessageFromDb($conn, $row['id']);
-            $messages[$receivedMsg->getMessageId()] = $receivedMsg;
-        }
-
-        return $messages;
-
+    public function numberOfUnreadedMessages(mysqli $conn) {
+        return Message::GetNumberOfUnreadedMessages($conn, $this->getUserId());
     }
 
     public function getAllFriends(mysqli $conn) {
@@ -273,10 +226,8 @@ Class User {
             return false;
         }
         $user = $result->fetch_assoc();
-        $this->salt = $user['salt'];
 
-        $hashedOldPassword = $this->hashPassword($oldPassword);
-        if ($hashedOldPassword != $user['password']) {
+        if (!password_verify($oldPassword, $user['password'])) {
             return false;
         }
 
@@ -287,7 +238,7 @@ Class User {
         $hashedNewPassword = $this->hashPassword($newPassword);
         $updateUserQuery = 'UPDATE users SET password="'.$hashedNewPassword.'",
                             editedUser="'.date('Y-m-d').'" WHERE id="'.$this->userId.'"';
-        $result = $conn->query($updateUserQuery) or die ($conn->error.'<br>'.$updateUserQuery);
+        $result = $conn->query($updateUserQuery) ;
 
         return $result;
     }
@@ -327,10 +278,5 @@ Class User {
         return $result;
     }
 
-    public function numberOfUnreadedMessages(mysqli $conn) {
-        $sqlCount = 'SELECT id FROM messages WHERE readed=0 AND receiver_id='.$this->getUserId().' AND receinver_deleted=0 ';
-        $result = $conn->query($sqlCount);
-        return $result->num_rows;
-    }
 
 }

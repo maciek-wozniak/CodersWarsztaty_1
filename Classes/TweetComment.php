@@ -74,6 +74,48 @@ Class TweetComment {
         }
     }
 
+    static public function GetNumberOfTweetComments(mysqli $conn, $tweetId) {
+        $sqlCount = 'SELECT id FROM tweet_comments WHERE deleted=0 AND tweet_id='.$tweetId;
+        $result = $conn->query($sqlCount);
+        return $result->num_rows;
+    }
+
+    static public function GetAllTweetComments(mysqli $conn, $tweetId) {
+        $comments = [];
+        $getCommentsSql = 'SELECT * FROM tweet_comments WHERE deleted=0 AND tweet_id='.$tweetId;
+        $result = $conn->query($getCommentsSql);
+
+        while ($row = $result->fetch_assoc()) {
+            $comment = new TweetComment();
+            $comment->commentId = $row['id'];
+            $comment->setAuthorId($row['author_id']);
+            $comment->setTweetId($row['tweet_id']);
+            $comment->setCommentText($row['comment_text']);
+            $comment->setCreationDate($row['creation_date']);
+            $comments[] = $comment;
+        }
+
+        return $comments;
+    }
+
+    static public function GetAllUserComments(mysqli $conn, $userId) {
+        $comments = [];
+        $getCommentsSql = 'SELECT * FROM tweet_comments WHERE deleted=0 AND author_id='.$userId;
+        $result = $conn->query($getCommentsSql);
+
+        while ($row = $result->fetch_assoc()) {
+            $comment = new TweetComment();
+            $comment->commentId = $row['id'];
+            $comment->setAuthorId($row['author_id']);
+            $comment->setTweetId($row['tweet_id']);
+            $comment->setCommentText($row['comment_text']);
+            $comment->setCreationDate($row['creation_date']);
+            $comments[] = $comment;
+        }
+
+        return $comments;
+    }
+
     public function createCommentAndAddToDb(mysqli $conn) {
         if (!is_numeric($this->tweetId) || !($this->tweetId>0) || !(strlen($this->commentText)>0) ||
             !is_numeric($this->authorId) || !($this->authorId>0)) {

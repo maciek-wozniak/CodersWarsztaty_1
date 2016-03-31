@@ -3,7 +3,10 @@
 require_once dirname(__FILE__).'/../Classes/allClasses.php';
 
 
-session_start();
+if (!isset($_SESSION)) {
+    session_start();
+}
+
 if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
 }

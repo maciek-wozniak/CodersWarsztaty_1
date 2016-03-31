@@ -73,6 +73,59 @@ Class Message {
         $this->messageText = $messageText;
     }
 
+    static public function GetAllReceivedUserMessages(mysqli $conn, $userId){
+        $allMessages = [];
+
+        $sqlMessages = 'SELECT * FROM messages WHERE receinver_deleted=0 AND receiver_id='.$userId;
+        $result = $conn->query($sqlMessages);
+        if ($result !== false) {
+            if ($result->num_rows>0) {
+                while ($row = $result->fetch_assoc()) {
+                    $message = new Message();
+                    $message->messageId = $row['id'];
+                    $message->setMessageText($row['message_text']);
+                    $message->setMessageTitle($row['title']);
+                    $message->setReaded($row['readed']);
+                    $message->setSenderId($row['sender_id']);
+                    $message->setReceiverId($row['receiver_id']);
+                    $message->setSendTime($row['send_time']);
+                    $allMessages[] = $message;
+                }
+            }
+        }
+        return $allMessages;
+    }
+
+    static public function GetAllSendUserMessages(mysqli $conn, $userId){
+        $allMessages = [];
+
+        $sqlMessages = 'SELECT * FROM messages WHERE sender_deleted=0 AND sender_id='.$userId;
+        $result = $conn->query($sqlMessages);
+        if ($result !== false) {
+            if ($result->num_rows>0) {
+                while ($row = $result->fetch_assoc()) {
+                    $message = new Message();
+                    $message->messageId = $row['id'];
+                    $message->setMessageText($row['message_text']);
+                    $message->setMessageTitle($row['title']);
+                    $message->setReaded($row['readed']);
+                    $message->setSenderId($row['sender_id']);
+                    $message->setReceiverId($row['receiver_id']);
+                    $message->setSendTime($row['send_time']);
+                    $allMessages[] = $message;
+                }
+            }
+        }
+        return $allMessages;
+    }
+
+    static public function GetNumberOfUnreadedMessages(mysqli $conn, $userId) {
+        $sqlCount = 'SELECT id FROM messages WHERE readed=0 AND receiver_id='.$userId.' AND receinver_deleted=0 ';
+        $result = $conn->query($sqlCount);
+        return $result->num_rows;
+    }
+
+
     public function sendMessage(mysqli $conn) {
         $sendSql = 'INSERT INTO messages (sender_id, receiver_id, title, message_text, send_time) VALUES
             ("'.$this->getSenderId().'", "'.$this->getReceiverId().'", "'.$this->getMessageTitle().'", "'.$this->getMessageText().'",  "'.date('Y-m-d  H:i:s').'")';
