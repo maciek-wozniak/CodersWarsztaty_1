@@ -25,6 +25,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
         <th>Lp</th>
         <th>Odbiorca</th>
         <th>Tytuł</th>
+        <th>Początek wiadomości</th>
         <th>Wysłano</th>
     </thead>
 
@@ -44,15 +45,16 @@ foreach ($sentMessages as $msg) {
         <td><? echo $i ?></td>
         <td><a href="userInfo.php?id=<? echo $usr->getUserId() ?>"><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></a></td>
         <td><? echo $msg->getMessageTitle() ?></td>
+        <td><? echo substr($msg->getMessageText(), 0, 30) ?></td>
         <td><? echo $msg->getSendTime() ?></td>
     </tr>
 
     <tr class="collapse msg<? echo $msg->getMessageId(); ?>">
-        <td colspan="4"><? echo nl2br($msg->getMessageText()) ?></td>
+        <td colspan="5"><? echo nl2br($msg->getMessageText()) ?></td>
     </tr>
 
     <tr class="collapse msg<? echo $msg->getMessageId(); ?>">
-        <td colspan="4" style="text-align: center;"><a href="messagePanel.php?page=outbox&delete=<? echo $msg->getMessageId(); ?>">Usuń wiadomość</a></td>
+        <td colspan="5" style="text-align: center;"><a href="messagePanel.php?page=outbox&delete=<? echo $msg->getMessageId(); ?>">Usuń wiadomość</a></td>
     </tr>
 
     <?

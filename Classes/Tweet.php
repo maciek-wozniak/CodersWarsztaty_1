@@ -24,7 +24,7 @@ Class Tweet {
 
     static public function GetAllUserTweets(mysqli $conn, $userId){
         $allTweets = [];
-        $sqlTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id='.$userId;
+        $sqlTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id='.$userId.' ORDER BY created DESC';
         $result = $conn->query($sqlTweets);
 
         if ($result !== false) {
@@ -125,11 +125,11 @@ Class Tweet {
     }
 
     public function getAllComments(mysqli $conn) {
-        TweetComment::GetAllTweetComments($conn, $this->getTweetId());
+        return TweetComment::GetAllTweetComments($conn, $this->getTweetId());
     }
 
     public function numberOfComments(mysqli $conn) {
-        TweetComment::GetNumberOfTweetComments($conn, $this->getTweetId());
+        return TweetComment::GetNumberOfTweetComments($conn, $this->getTweetId());
     }
 
     public function getTweetId() {

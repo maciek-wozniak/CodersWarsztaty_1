@@ -76,7 +76,7 @@ Class Message {
     static public function GetAllReceivedUserMessages(mysqli $conn, $userId){
         $allMessages = [];
 
-        $sqlMessages = 'SELECT * FROM messages WHERE receinver_deleted=0 AND receiver_id='.$userId;
+        $sqlMessages = 'SELECT * FROM messages WHERE receinver_deleted=0 AND receiver_id='.$userId.' ORDER BY send_time DESC';
         $result = $conn->query($sqlMessages);
         if ($result !== false) {
             if ($result->num_rows>0) {
@@ -99,7 +99,7 @@ Class Message {
     static public function GetAllSendUserMessages(mysqli $conn, $userId){
         $allMessages = [];
 
-        $sqlMessages = 'SELECT * FROM messages WHERE sender_deleted=0 AND sender_id='.$userId;
+        $sqlMessages = 'SELECT * FROM messages WHERE sender_deleted=0 AND sender_id='.$userId.' ORDER BY send_time DESC';
         $result = $conn->query($sqlMessages);
         if ($result !== false) {
             if ($result->num_rows>0) {

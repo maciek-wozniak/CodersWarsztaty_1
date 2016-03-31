@@ -42,18 +42,31 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sendMessage'])){
     }
 }
 
+// Jeżeli odpowiadamy na maila
 if (isset($_GET['reply']) && is_numeric($_GET['reply'])) {
     $replyToMsg = new Message();
-    $replyToMsg->loadMessageFromDb($conn, $_GET['reply']);
+    if ($replyToMsg->loadMessageFromDb($conn, $_GET['reply'] === false)) {
+        unset($replyToMsg);
+    }
 
     if ($replyToMsg->getReceiverId() != $_SESSION['user']->getUserId()) {
         return false;
     }
 
     $replyToUser = new User();
-    $replyToUser->loadUserFromDb($conn, $replyToMsg->getSenderId());
+    if ($replyToUser->loadUserFromDb($conn, $replyToMsg->getSenderId() === false)) {
+        unset($replyToMsg);
+    }
 }
 
+// Jeżeli wybraliśmy użytkownika do którego chcemy pisać
+
+if (isset($_GET['userId']) && is_numeric($_GET['userId'])) {
+    $replyToUser = new User();
+    if ($replyToUser->loadUserFromDb($conn, $_GET['userId'])===false) {
+        unset($replyToUser);
+    }
+}
 
 if (isset($message) && isset($messageType)) {
     showMessage($message, $messageType);

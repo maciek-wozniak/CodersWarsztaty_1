@@ -82,7 +82,7 @@ Class TweetComment {
 
     static public function GetAllTweetComments(mysqli $conn, $tweetId) {
         $comments = [];
-        $getCommentsSql = 'SELECT * FROM tweet_comments WHERE deleted=0 AND tweet_id='.$tweetId;
+        $getCommentsSql = 'SELECT * FROM tweet_comments WHERE deleted=0 AND tweet_id='.$tweetId.' ORDER BY creation_date DESC';
         $result = $conn->query($getCommentsSql);
 
         while ($row = $result->fetch_assoc()) {
@@ -171,7 +171,7 @@ Class TweetComment {
         }
         $commenttDate = $this->getCreationDate();
 
-        echo '<div class="panel panel-info">';
+        echo '<div class="panel panel-info" style="width: 500px;margin: 0 auto;">';
         echo '<div class="panel-heading">Komentarz ' .$commentAuthor. ' z '
                 .substr($commenttDate,0,strlen($commenttDate)-3).' '.$editLink.' '.$deleteLink.'</div>';
         echo '<div class="panel-body">'.$this->commentText.'</div>';

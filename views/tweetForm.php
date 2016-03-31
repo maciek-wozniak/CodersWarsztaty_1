@@ -17,7 +17,10 @@ else {
 if (isset($_SESSION['user']) && isset($_GET['updateTweet']) && $_GET['updateTweet'] > 0 &&
     $_SERVER['REQUEST_METHOD'] === 'POST' && strlen($_POST['tweetText'])<=140) {
     $updateTweet = new Tweet();
-    $updateTweet->loadTweetFromDb($conn, $_GET['updateTweet']);
+    if ($updateTweet->loadTweetFromDb($conn, $_GET['updateTweet']) === false) {
+        unset($updateTweet);
+    }
+
     if ($_SESSION['user']->getUserId() == $updateTweet->getAuthorId()) {
         $updateTweet->setTweetText($_POST['tweetText']);
 
@@ -36,7 +39,10 @@ else if (isset($_GET['updateTweet']) && strlen($_POST['tweetText'])>140){
 // usuwanie tweetow
 if (isset($_SESSION['user']) && isset($_GET['deleteTweet']) && $_GET['deleteTweet'] > 0 ) {
     $deleteTweet = new Tweet();
-    $deleteTweet->loadTweetFromDb($conn, $_GET['deleteTweet']);
+    if ($deleteTweet->loadTweetFromDb($conn, $_GET['deleteTweet']) === false) {
+        unset($deleteTweet);
+    }
+
     if ($_SESSION['user']->getUserId() == $deleteTweet->getAuthorId()) {
         if ($deleteTweet->deleteTweet($conn)) {
             header('Location: index.php');
@@ -70,7 +76,11 @@ else if (isset($_POST['addTweet']) && strlen($_POST['tweetText'])>140){
 // wczytywanie tweeta do edycji
 if (isset($_GET['editTweet']) && is_numeric($_GET['editTweet']) && $_GET['editTweet'] > 0 && isset($_SESSION['user'])) {
     $editedTweet = new Tweet();
-    $editedTweet->loadTweetFromDb($conn, $_GET['editTweet']);
+
+    if ($editedTweet->loadTweetFromDb($conn, $_GET['editTweet'])) {
+        unset($editedTweet);
+    }
+
     if ($editedTweet->getAuthorId() != $_SESSION['user']->getUserId()) {
         unset($editedTweet);
     }

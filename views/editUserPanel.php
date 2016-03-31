@@ -18,6 +18,7 @@ function showMessage($text, $type) {
     echo '<div class="alert alert-'.$type.'" role="alert" style="width: 400px; margin: 0 auto; margin-top: 20px;">'.$text.'</div>';
 }
 
+// Usuwamy usera
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteAccount'])) {
     if ($user->deleteUser($conn, $_POST['password'])) {
         header('Location: ../');
@@ -32,6 +33,7 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delet
     }
 }
 
+// Zmieniamy usera dane bez hasla
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changeUserName'])) {
     if ($user->updateUser($conn, $_POST['email'], $_POST['username'])) {
         header('Location: ../');
@@ -42,6 +44,7 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chang
     }
 }
 
+// Zmeiniamy usera haslo
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changePassword'])) {
     if ($user->updateUserPassword($conn, $_POST['password'], $_POST['newPassword'], $_POST['confirmPassword'])) {
         header('Location: ../');

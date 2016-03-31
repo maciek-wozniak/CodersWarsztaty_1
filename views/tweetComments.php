@@ -13,6 +13,13 @@ else {
     header('Location: ../');
 }
 
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $tweet = new Tweet();
+    if ($tweet->loadTweetFromDb($conn, $_GET['id']) === false ){
+        unset($tweet);
+    }
+}
+
 $buttonName = 'addComment';
 $messageType = 'danger';
 
@@ -23,10 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addComment']) &&
     $tweetComment = new TweetComment();
     $tweetComment->setAuthorId($_SESSION['user']->getUserId());
     $tweetComment->setCommentText($_POST['commentText']);
-    $tweetComment->setTweetId($id);
+    $tweetComment->setTweetId($tweet->getTweetId());
 
     if ($tweetComment->createCommentAndAddToDb($conn)) {
-        header('Location: tweetComments.php?id='.$id);
+        header('Location: tweetComments.php?id='.$tweet->getTweetId());
     }
     else {
         $message = 'Nie udało się dodać komentarza, proszę spróbować jeszcze raz';
@@ -43,7 +50,10 @@ else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addComment']) &&
 // Usuwanie komentarza
 if (isset($_GET['deleteComment']) && is_numeric($_GET['deleteComment'])) {
     $tweetComment = new TweetComment();
-    $tweetComment->loadCommentFromDb($conn, $_GET['deleteComment']);
+    if ($tweetComment->loadCommentFromDb($conn, $_GET['deleteComment']) === false) {
+        unset($tweetComment);
+    }
+
     if ($tweetComment->deleteComment($conn)) {
         header('Location: tweetComments.php?id='.$id);
     }
@@ -56,7 +66,11 @@ if (isset($_GET['deleteComment']) && is_numeric($_GET['deleteComment'])) {
 // Wczytywanie komentarza do edycji
 if (isset($_GET['editComment']) && is_numeric($_GET['editComment'])) {
     $editedComment = new TweetComment();
-    $editedComment->loadCommentFromDb($conn, $_GET['editComment']);
+
+    if ($editedComment->loadCommentFromDb($conn, $_GET['editComment']) === false) {
+        unset($editedComment);
+    }
+
     $buttonName = 'editComment';
 
     // Edytowanie komentarza
@@ -75,15 +89,8 @@ if (isset($_GET['editComment']) && is_numeric($_GET['editComment'])) {
 }
 
 
-if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-    $tweet = new Tweet();
-    if ($tweet->loadTweetFromDb($conn, $_GET['id']) === false ){
-        unset($tweet);
-    }
-}
-
 if (!isset($tweet)) {
-    return die('Failed to load tweet');
+    die('Failed to load tweet');
 }
 
 function showMessage($text, $type) {
@@ -116,8 +123,16 @@ function showMessage($text, $type) {
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="margin-top: 10px;">
 
-                <? $tweet->showTweet($conn); ?>
-                <? $tweet->getAllComments($conn) ?>
+                <?  $tweet->showTweet($conn);
+                    echo '<br>';
+                    $comments = $tweet->getAllComments($conn);
+                    foreach ($comments as $comment) {
+                        $comment->showComment($conn);
+                        echo '<br>';
+                    }
+
+                ?>
+
             </div>
         </div>
 

@@ -27,6 +27,7 @@ Class User {
             $this->username = $user['username'];
             $this->salt = $user['salt'];
         }
+        return $result;
     }
 
     public function getUsername() {
