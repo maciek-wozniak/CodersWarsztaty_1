@@ -14,10 +14,6 @@ else {
     header('Location: ../');
 }
 
-function showMessage($text, $type) {
-    echo '<div class="alert alert-'.$type.'" role="alert" style="width: 400px; margin: 0 auto; margin-top: 20px;">'.$text.'</div>';
-}
-
 // Usuwamy usera
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteAccount'])) {
     if ($user->deleteUser($conn, $_POST['password'])) {
@@ -88,14 +84,14 @@ if (isset($message) && isset($messageType)) {
         <div class="form-group">
             <label class="control-label col-sm-4" for="username">Nazwa użytkownika:</label>
             <div class="col-sm-8">
-                <input name="username" style="width:300px;" id="username" type="text" maxlength="255" placeholder="Nazwa użytkownika" class="form-control" value="<? if (isset($user)) echo $user->username ?>"/>
+                <input name="username" style="width:300px;" id="username" type="text" maxlength="255" placeholder="Nazwa użytkownika" class="form-control" value="<? if (isset($user)) echo $user->getUsername() ?>"/>
             </div>
         </div>
 
         <div class="form-group">
             <label class="control-label col-sm-4" for="email">E-mail:</label>
             <div class="col-sm-8">
-                <input type="email" style="width:300px;" name="email" id="email" maxlength="255" placeholder="E-mail" class="form-control" value="<? if (isset($user)) echo $user->email ?>"/>
+                <input type="email" style="width:300px;" name="email" id="email" maxlength="255" placeholder="E-mail" class="form-control" value="<? if (isset($user)) echo $user->getEmail() ?>"/>
             </div>
         </div>
 

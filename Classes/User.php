@@ -279,5 +279,21 @@ Class User {
         return $result;
     }
 
+    static public function GetAllUsers(mysqli $conn) {
+        $allUsers = [];
+        $sql = 'SELECT * FROM users WHERE deleted=0';
+        $result = $conn->query($sql);
+        if ($result->num_rows>0) {
+            while ($row = $result->fetch_assoc()) {
+                $user = new User();
+                $user->userId = $row['id'];
+                $user->setEmail($row['email']);
+                $user->setUsername($row['username']);
+                $allUsers[] = $user;
+            }
+        }
+        return $allUsers;
+    }
+
 
 }

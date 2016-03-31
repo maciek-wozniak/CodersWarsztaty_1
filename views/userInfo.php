@@ -42,9 +42,10 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                     if (isset($userInfo)) {
                         echo 'E-mail: '.$userInfo->getEmail().'<br>';
                         echo 'Username: '.$userInfo->getUsername().'<br>';
-                        //if ($_SESSION['user']->getUserId() != $userInfo->getUserId()) {
+                        if ($_SESSION['user']->getUserId() != $userInfo->getUserId()) {
+                            echo '<a class="btn btn-primary btn-xs" href="">Zaproponuj przyjaźń</a> ';
                             echo '<a class="btn btn-primary btn-xs" href="messagePanel.php?userId='.$userInfo->getUserId().'">Wyślij wiadomość</a><br>';
-                        //}
+                        }
                         echo '<br>';
 
                         echo 'Tweety użytkownika:<br>';

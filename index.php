@@ -28,7 +28,7 @@ if (!$conn) {
 
     <div class="row">
         <!-- First panel -->
-        <div class="col-sm-12" style="background-color: lime; padding-bottom: 20px;"><?php
+        <div class="col-sm-12 navbar navbar-default" style="padding-bottom: 20px;"><?php
 
             if (isset($_SESSION['user'])) {
                 include_once dirname(__FILE__).'/views/userPanel.php';

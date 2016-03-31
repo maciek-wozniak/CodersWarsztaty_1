@@ -48,7 +48,7 @@ if (isset($_SESSION['user']) && isset($_GET['deleteTweet']) && $_GET['deleteTwee
             header('Location: index.php');
         }
         else {
-            echo 'Nie udało się usunąć tweeta, spróbuj jeszcze raz';
+            $message = 'Nie udało się usunąć tweeta, spróbuj jeszcze raz';
         }
     }
 }
@@ -57,20 +57,25 @@ if (isset($_SESSION['user']) && isset($_GET['deleteTweet']) && $_GET['deleteTwee
 // dodawanie tweeta
 if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addTweet']) &&
     !isset($_GET['updateTweet'])  && !isset($_GET['deleteTweet']) && strlen($_POST['tweetText'])<=140) {
-    $user = $_SESSION['user'];
-    $newTweet = new Tweet();
-    $newTweet->setAuthorId($user->getUserId());
-    $newTweet->setTweetText($_POST['tweetText']);
 
-    if ($newTweet->createTweetAndAddToDb($conn)) {
-        header('Location: index.php');;
+    if (strlen($_POST['tweetText'])<1) {
+        $message = 'Proszę wpisać treść tweeta';
     }
     else {
-        echo 'Nie udało się dodać, proszę spróbować ponownie';
+        $user = $_SESSION['user'];
+        $newTweet = new Tweet();
+        $newTweet->setAuthorId($user->getUserId());
+        $newTweet->setTweetText($_POST['tweetText']);
+
+        if ($newTweet->createTweetAndAddToDb($conn)) {
+            header('Location: index.php');;
+        } else {
+            $message = 'Nie udało się dodać, proszę spróbować ponownie';
+        }
     }
 }
 else if (isset($_POST['addTweet']) && strlen($_POST['tweetText'])>140){
-    echo 'Nie udało się dodać tweeta - tekst jest za długi';
+    $message = 'Nie udało się dodać tweeta - tekst jest za długi';
 }
 
 // wczytywanie tweeta do edycji
@@ -84,6 +89,11 @@ if (isset($_GET['editTweet']) && is_numeric($_GET['editTweet']) && $_GET['editTw
     if ($editedTweet->getAuthorId() != $_SESSION['user']->getUserId()) {
         unset($editedTweet);
     }
+}
+
+
+if (isset($message) && isset($messageType)) {
+    showMessage($message, $messageType);
 }
 
 ?>

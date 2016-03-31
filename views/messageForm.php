@@ -83,7 +83,7 @@ if (isset($message) && isset($messageType)) {
         </div>
 
         <div class="form-group">
-            <label class="control-label col-sm-3" for="messageReceiver">Adresat:</label>
+            <label class="control-label col-sm-3" for="messageReceiver">Adresat:*</label>
             <div class="col-sm-8">
                 <input type="text" name="messageReceiver" id="messageReceiver" class="form-control"
                        value="<?
@@ -93,6 +93,17 @@ if (isset($message) && isset($messageType)) {
                             else if (isset($replyToUser)) {
                                 echo $replyToUser->getEmail() ;
                             } ?>" />
+                <select class="form-control" name="messageReceiverSelect">
+                    <option value="-1">Wybierz adresata</option>
+                    <?php
+                        $allUsers = User::GetAllUsers($conn);
+                        foreach ($allUsers as $user) {
+                            if ($user->getUserId() != $_SESSION['user']->getUserId()) {
+                                echo '<option value="' . $user->getUserId() . '">' . $user->getEmail . ' ' . $user->getUsername() . '</option>';
+                            }
+                        }
+                    ?>
+                </select>
             </div>
         </div>
 
@@ -124,6 +135,7 @@ if (isset($message) && isset($messageType)) {
                             echo $replyToMsg->getMessageText();
                         }
                     ?></textarea>
+                * - wybierz z listy lub wprowadź adres mailowy użytkownika, któremu chcesz wysłać maila
             </div>
         </div>
 
