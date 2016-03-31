@@ -1,6 +1,6 @@
 <?php
 
-include_once dirname(__FILE__).'/../Classes/User.php';
+require_once dirname(__FILE__).'/../Classes/allClasses.php';
 
 // logujemy sie
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
@@ -17,14 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
     else{ // udalo sie zalogowac
         $userObject = new User();
-        $userLogin = $userObject -> login($email, $password);
+        $userLogin = $userObject -> login($conn, $email, $password);
         if ($userLogin === true) {
-
             unset($userObject);
             unset($userLogin);
-            $loggedUser = new User();
-            unset($_SESSION['user']);
-            $_SESSION['user'] = $loggedUser;
             header("Location: index.php");
         }
         else {

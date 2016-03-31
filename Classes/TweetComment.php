@@ -1,5 +1,7 @@
 <?php
-include_once dirname(__FILE__).'/DbConnection.php';
+//include_once dirname(__FILE__).'/DbConnection.php';
+require_once 'allClasses.php';
+
 if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', 'http://' . $_SERVER['HTTP_HOST'] . '/CodersWarsztaty_1');
 }
@@ -56,10 +58,9 @@ Class TweetComment {
         $this->creationDate = $creationDate;
     }
 
-    public function loadCommentFromDb($id){
-        $dbConnection = DbConnection::getConnection();
+    public function loadCommentFromDb(mysqli $conn, $id){
         $sqlGetComment = 'SELECT * FROM tweet_comments WHERE deleted=0 AND id='.$id;
-        $result = $dbConnection->query($sqlGetComment);
+        $result = $conn->query($sqlGetComment);
         if ($result->num_rows!=1) {
             return null;
         }
@@ -69,29 +70,24 @@ Class TweetComment {
             $this->tweetId = $dbComment['tweet_id'];
             $this->authorId = $dbComment['author_id'];
             $this->creationDate = $dbComment['creation_date'];
-            $this->commentText = $dbComment['text'];
+            $this->commentText = $dbComment['comment_text'];
         }
-        $dbConnection->close();
-        $dbConnection=null;
     }
 
-    public function createCommentAndAddToDb() {
+    public function createCommentAndAddToDb(mysqli $conn) {
         if (!is_numeric($this->tweetId) || !($this->tweetId>0) || !(strlen($this->commentText)>0) ||
             !is_numeric($this->authorId) || !($this->authorId>0)) {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
         $addCommentSql = 'INSERT INTO tweet_comments
-                          (tweet_id, author_id, text, creation_date)
+                          (tweet_id, author_id, comment_text, creation_date)
                           VALUES ("'.$this->tweetId.'", "'.$this->authorId.'", "'.$this->commentText.'", "'.date('Y-m-d  H:i:s').'")';
-        $result = $dbConnection->query($addCommentSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($addCommentSql);
         return $result;
     }
 
-    public function updateComment() {
+    public function updateComment(mysqli $conn) {
         if (!is_numeric($this->tweetId) || !($this->tweetId>0) || !(strlen($this->commentText)>0) ||
             !is_numeric($this->authorId) || !($this->authorId>0)) {
             return false;
@@ -101,34 +97,28 @@ Class TweetComment {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
-        $updateCommentSql = 'UPDATE tweet_comments SET text="'.$this->commentText.'"
+        $updateCommentSql = 'UPDATE tweet_comments SET comment_text="'.$this->commentText.'"
                             WHERE id='.$this->getCommentId();
-        $result = $dbConnection->query($updateCommentSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($updateCommentSql);
         return $result;
     }
 
-    public function deleteComment() {
+    public function deleteComment(mysqli $conn) {
         if (!isset($_SESSION['user']) || $_SESSION['user']->getUserId() != $this->authorId) {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
         $updateCommentSql = 'UPDATE tweet_comments SET deleted=1  WHERE id='.$this->getCommentId();
-        $result = $dbConnection->query($updateCommentSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($updateCommentSql);
         return $result;
     }
 
-    public function showComment() {
+    public function showComment(mysqli $conn) {
         if (!isset($_SESSION)) {
             return false;
         }
         $author = new User($this->authorId);
-        $author->loadUserFromDb($this->authorId);
+        $author->loadUserFromDb($conn, $this->authorId);
         $commentAuthor = $author->linkToUser();
 
         $editLink = '';

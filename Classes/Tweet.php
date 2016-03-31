@@ -1,7 +1,10 @@
 <?php
-include_once dirname(__FILE__).'/DbConnection.php';
-include_once dirname(__FILE__).'/User.php';
-include_once dirname(__FILE__).'/TweetComment.php';
+//include_once dirname(__FILE__).'/DbConnection.php';
+//include_once dirname(__FILE__).'/User.php';
+//include_once dirname(__FILE__).'/TweetComment.php';
+
+require_once 'allClasses.php';
+
 if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', 'http://' . $_SERVER['HTTP_HOST'] . '/CodersWarsztaty_1');
 }
@@ -22,10 +25,14 @@ Class Tweet {
         $this->isDeleted = 0;
     }
 
-    public function loadTweetFromDb($id){
-        $dbConnection = DbConnection::getConnection();
+    static public function GetAllUserTweets($dbConnection, $userId){
+
+    }
+
+    public function loadTweetFromDb(mysqli $conn, $id){
+
         $sqlGetTweet = 'SELECT * FROM tweets WHERE deleted=0 AND id='.$id;
-        $result = $dbConnection->query($sqlGetTweet);
+        $result = $conn->query($sqlGetTweet);
         if ($result->num_rows!=1) {
             return false;
         }
@@ -33,30 +40,25 @@ Class Tweet {
             $dbTweet = $result->fetch_assoc();
             $this->tweetId = $dbTweet['id'];
             $this->setAuthorId($dbTweet['author_id']);
-            $this->setTweetText($dbTweet['text']);
+            $this->setTweetText($dbTweet['tweet_text']);
             $this->setCreateDate($dbTweet['created']);
             $this->setIsDeleted(0);
         }
-        $dbConnection->close();
-        $dbConnection=null;
         return $result;
     }
 
-    public function createTweetAndAddToDb() {
+    public function createTweetAndAddToDb(mysqli $conn) {
         if (!is_numeric($this->authorId) || !($this->authorId>0) || !(strlen($this->tweetText)>0)) {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
-        $addTweetSql = 'INSERT INTO tweets (author_id, text, created)
+        $addTweetSql = 'INSERT INTO tweets (author_id, tweet_text, created)
                           VALUES ("'.$this->authorId.'", "'.$this->tweetText.'", "'.date('Y-m-d  H:i:s').'")';
-        $result = $dbConnection->query($addTweetSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($addTweetSql);
         return $result;
     }
 
-    public function updateTweet() {
+    public function updateTweet(mysqli $conn) {
         if (!is_numeric($this->authorId) || !($this->authorId>0) || !(strlen($this->tweetText)>0)) {
             return false;
         }
@@ -65,27 +67,24 @@ Class Tweet {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
-        $updateTweetSql = 'UPDATE tweets SET text="'.$this->tweetText.'",
+        $updateTweetSql = 'UPDATE tweets SET tweet_text="'.$this->tweetText.'",
                             updated="'.date('Y-m-d').'" WHERE id='.$this->getTweetId();
-        $result = $dbConnection->query($updateTweetSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($updateTweetSql);
         return $result;
     }
 
-    public function showTweet() {
+    public function showTweet(mysqli $conn) {
         if (!isset($_SESSION)) {
             return false;
         }
         $author = new User($this->authorId);
-        $author->loadUserFromDb($this->authorId);
+        $author->loadUserFromDb($conn, $this->authorId);
         $tweetAuthorLink = $author->linkToUser('white');
 
         $editLink = '';
         $deleteLink = '';
         $commentsLink = '';
-        $commentsLink = '<a href="'.ROOT_PATH.'/views/tweetComments.php?id=' . $this->tweetId . '" style="color:white;">Komentarzy: [' . $this->numberOfComments() . ']</a>';
+        $commentsLink = '<a href="'.ROOT_PATH.'/views/tweetComments.php?id=' . $this->getTweetId() . '" style="color:white;">Komentarzy: [' . $this->numberOfComments($conn) . ']</a>';
 
         if ($this->authorId == $_SESSION['user']->getUserId()) {
             $editLink = '<a class="btn btn-xs btn-primary" href="'.ROOT_PATH.'/index.php?editTweet='.$this->getTweetId().'">Edytuj</a>';
@@ -100,35 +99,30 @@ Class Tweet {
         echo '</div>';
     }
 
-    public function deleteTweet() {
+    public function deleteTweet(mysqli $conn) {
         if (!isset($_SESSION['user']) || $_SESSION['user']->getUserId() != $this->authorId) {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
         $updateTweetSql = 'UPDATE tweets SET deleted=1,
                             updated="'.date('Y-m-d').'" WHERE id='.$this->getTweetId();
-        $result = $dbConnection->query($updateTweetSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($updateTweetSql);
         return $result;
     }
 
-    public function getAllComments() {
-        $dbConnection = DbConnection::getConnection();
+    public function getAllComments(mysqli $conn) {
         $sqlComments = 'SELECT id FROM tweet_comments WHERE deleted=0 AND tweet_id='.$this->tweetId.' ORDER BY creation_date DESC';
-        $result = $dbConnection->query($sqlComments);
+        $result = $conn->query($sqlComments);
         while ($row = $result->fetch_assoc() ) {
             $comment = new TweetComment();
-            $comment->loadCommentFromDb($row['id']);
-            $comment->showComment();
+            $comment->loadCommentFromDb($conn, $row['id']);
+            $comment->showComment($conn);
         }
     }
 
-    public function numberOfComments() {
-        $dbConnection = DbConnection::getConnection();
+    public function numberOfComments(mysqli $conn) {
         $sqlCount = 'SELECT id FROM tweet_comments WHERE tweet_id='.$this->tweetId.' AND deleted=0 ';
-        $result = $dbConnection->query($sqlCount);
+        $result = $conn->query($sqlCount);
         return $result->num_rows;
     }
 

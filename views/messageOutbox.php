@@ -1,9 +1,17 @@
 <?php
 
+session_start();
+if (isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+}
+else {
+    header('Location: ../');
+}
+
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $msgToDelete = new Message();
-    $msgToDelete->loadMessageFromDb($_GET['delete']);
-    $msgToDelete->senderDeletedMsg();
+    $msgToDelete->loadMessageFromDb($conn, $_GET['delete']);
+    $msgToDelete->senderDeletedMsg($conn);
 }
 
 ?>
@@ -23,10 +31,10 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 
 
 $i = 1;
-$sentMessages = $user->getSentMessages();
+$sentMessages = $user->getSentMessages($conn);
 foreach ($sentMessages as $msg) {
-    $usr = new User(-1);
-    $usr->loadUserFromDb($msg->getReceiverId());
+    $usr = new User();
+    $usr->loadUserFromDb($conn, $msg->getReceiverId());
 
     ?>
     <tr data-toggle="collapse" data-target=".msg<? echo $msg->getMessageId(); ?>" style="cursor: pointer;">

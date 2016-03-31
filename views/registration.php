@@ -1,6 +1,6 @@
 <?php
 
-include_once dirname(__FILE__).'/../Classes/User.php';
+require_once '../Classes/allClasses.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $messageType = 'danger';
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     else {
         $userObject = new User();
-        $userAdd = $userObject -> addUser($email, $password, $username);
+        $userAdd = $userObject -> addUser($conn, $email, $password, $username);
         if ($userAdd === true) {
             $message = 'Użytkownik został dodany. Możesz się teraz zalogować<br><a href="../">Zaloguj się</a>';
             $messageType = 'success';

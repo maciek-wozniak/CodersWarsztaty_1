@@ -1,15 +1,13 @@
 <?php
 
-include_once dirname(__FILE__).'/../Classes/Tweet.php';
-include_once dirname(__FILE__).'/../Classes/TweetComment.php';
+require_once dirname(__FILE__).'/../Classes/allClasses.php';
 
 session_start();
-if (isset($_SESSION['user']) && isset($_GET['id']) && is_numeric($_GET['id'])) {
+if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
-    $id = $_GET['id'];
 }
 else {
-    return false;
+    header('Location: ../');
 }
 
 $buttonName = 'addComment';
@@ -17,14 +15,14 @@ $messageType = 'danger';
 
 // Dodawanie komentarza
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addComment']) &&
-    isset($_POST['commentText']) && strlen($_POST['commentText'])>1 ) {
+    isset($_POST['commentText']) && strlen($_POST['commentText'])>1 && strlen($_POST['commentText']) <=60) {
 
     $tweetComment = new TweetComment();
     $tweetComment->setAuthorId($_SESSION['user']->getUserId());
     $tweetComment->setCommentText($_POST['commentText']);
     $tweetComment->setTweetId($id);
 
-    if ($tweetComment->createCommentAndAddToDb()) {
+    if ($tweetComment->createCommentAndAddToDb($conn)) {
         header('Location: tweetComments.php?id='.$id);
     }
     else {
@@ -34,13 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addComment']) &&
 else if (isset($_POST['addComment']) && (!isset($_POST['commentText']) || !(strlen($_POST['commentText'])>1))) {
     $message = 'Wpisz tekst komentarza';
 }
+else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addComment']) && strlen($_POST['commentText']) > 60) {
+    $message = 'Komentarz jest za długi, max 60 znaków';
+}
 
 
 // Usuwanie komentarza
 if (isset($_GET['deleteComment']) && is_numeric($_GET['deleteComment'])) {
     $tweetComment = new TweetComment();
-    $tweetComment->loadCommentFromDb($_GET['deleteComment']);
-    if ($tweetComment->deleteComment()) {
+    $tweetComment->loadCommentFromDb($conn, $_GET['deleteComment']);
+    if ($tweetComment->deleteComment($conn)) {
         header('Location: tweetComments.php?id='.$id);
     }
     else {
@@ -52,26 +53,33 @@ if (isset($_GET['deleteComment']) && is_numeric($_GET['deleteComment'])) {
 // Wczytywanie komentarza do edycji
 if (isset($_GET['editComment']) && is_numeric($_GET['editComment'])) {
     $editedComment = new TweetComment();
-    $editedComment->loadCommentFromDb($_GET['editComment']);
+    $editedComment->loadCommentFromDb($conn, $_GET['editComment']);
     $buttonName = 'editComment';
 
     // Edytowanie komentarza
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editComment'])) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editComment']) && strlen($_POST['commentText']) <= 60) {
         $editedComment->setCommentText($_POST['commentText']);
-        if (!$editedComment->updateComment()) {
+        if (!$editedComment->updateComment($conn)) {
             $message = 'Nie udało się zmienić treści komentarza';
         }
-        else {
-           header('Location: tweetComments.php?id='.$id);
+        else{
+                header('Location: tweetComments.php?id='.$id);
         }
+    }
+    else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editComment']) && strlen($_POST['commentText']) > 60) {
+        $message = 'Komentarz za długi - max 60 znaków';
     }
 }
 
 
-$tweet = new Tweet();
-$result = $tweet->loadTweetFromDb($id);
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $tweet = new Tweet();
+    if ($tweet->loadTweetFromDb($conn, $_GET['id']) === false ){
+        unset($tweet);
+    }
+}
 
-if (!$result) {
+if (!isset($tweet)) {
     return die('Failed to load tweet');
 }
 
@@ -105,14 +113,14 @@ function showMessage($text, $type) {
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="margin-top: 10px;">
 
-                <? $tweet->showTweet(); ?>
-                <? $tweet->getAllComments() ?>
+                <? $tweet->showTweet($conn); ?>
+                <? $tweet->getAllComments($conn) ?>
             </div>
         </div>
 
 
         <div class="well" style="width: 500px; margin: 0 auto; margin-top: 20px;">
-            <form class="form-horizontal" method="post" action="tweetComments.php?id=<? echo $id; if (isset($editedComment)) echo '&editComment='.$editedComment->getCommentId() ?>">
+            <form class="form-horizontal" method="post" action="tweetComments.php?id=<? echo $_GET['id']; if (isset($editedComment)) echo '&editComment='.$editedComment->getCommentId() ?>">
 
                 <div class="form-group ">
                     <div class="col-sm-offset-4 col-sm-7">

@@ -1,38 +1,29 @@
 <?php
 
-include_once dirname(__FILE__).'/DbConnection.php';
-include_once dirname(__FILE__).'/Tweet.php';
-include_once dirname(__FILE__).'/Message.php';
+//include_once dirname(__FILE__).'/DbConnection.php';
+//include_once dirname(__FILE__).'/Tweet.php';
+//include_once dirname(__FILE__).'/Message.php';
+
+require_once 'allClasses.php';
 
 Class User {
     private $userId;
-    private $password;
     private $salt;
     public $email;
     public $username;
-
-    public function __construct($id = NULL) {
+    // statyczne metody dodac np. pobieranie tweetow danego usera w klasie tweeter
+    public function __construct() {
         if (session_status() != PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        if (!empty($_SESSION['user']) && $id == NULL) {
-            $user = $_SESSION['user'];
-            $this->userId = $user['id'];
-            $this->email = $user['email'];
-            $this->username = $user['username'];
-            $this->salt = $user['salt'];
-        }
-        else if ($id != NULL) {
-            $this->userId = -1;
-            $this->email = '';
-            $this->username = '';
-        }
+        $this->userId = -1;
+        $this->email = '';
+        $this->username = '';
     }
 
-    public function loadUserFromDb($id) {
+    public function loadUserFromDb(mysqli $conn, $id) {
         $sqlUser = 'SELECT * FROM users WHERE deleted=0 AND id='.$id;
-        $conn = DbConnection::getConnection();
         $result = $conn->query($sqlUser);
         if ($result->num_rows!=1) {
             return false;
@@ -64,13 +55,12 @@ Class User {
 
 
 
-    public function addUser($mail, $password, $name = null) {
+    public function addUser(mysqli $connection, $mail, $password, $name = null) {
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL) || empty($password)) {
             return false;
         }
         $this->generateSalt();
         $hashedPassword = $this->hashPassword($password);
-        $connection = DbConnection::getConnection();
         $insertUserQuery = 'INSERT INTO users (username, email, password, salt, createdUser) VALUES
                 ("'.$name.'", "'.$mail.'", "'.$hashedPassword.'", "'.$this->salt.'","'.date('Y-m-d').'")';
         $result = $connection->query($insertUserQuery);
@@ -95,12 +85,11 @@ Class User {
         $this->salt = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM);
     }
 
-    public function logIn($mail, $password) {
+    public function logIn(mysqli $conn, $mail, $password) {
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL) || empty($password)) {
             return false;
         }
 
-        $conn = DbConnection::getConnection();
         $getUserQuery = 'SELECT * FROM users WHERE email="' . $mail . '" AND deleted=0';
         $result = $conn->query($getUserQuery);
         if ($result->num_rows == 0) {
@@ -108,17 +97,17 @@ Class User {
         }
         $user = $result->fetch_assoc();
 
-        $this->salt = $user['salt'];
-        $hashedPassword = $this->hashPassword($password);
 
-        if ($hashedPassword != $user['password']) {
+        if (!password_verify($password, $user['password'])) {
             return false;
         }
 
-        unset($user['password']);
-        $_SESSION['user'] = $user;
-        $conn->close();
-        $conn=null;
+        $loggedUser = new User();
+        $loggedUser->userId = $user['id'];
+        $loggedUser->setEmail($user['email']);
+        $loggedUser->setUsername($user['username']);
+        $_SESSION['user'] = $loggedUser;
+
         return true;
     }
 
@@ -126,12 +115,11 @@ Class User {
         unset($_SESSION['user']);
     }
 
-    public function updateUser($mail, $name) {
+    public function updateUser(mysqli $connection, $mail, $name) {
         if (!filter_var($mail, FILTER_VALIDATE_EMAIL) ) {
             return false;
         }
 
-        $connection = DbConnection::getConnection();
         $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND email="'.$mail.'" ';
         $result = $connection->query($sqlIsUser);
         if ($result->num_rows == 1 && !($this->email == $mail)) {
@@ -139,7 +127,6 @@ Class User {
             return false;
         }
 
-        $connection = DbConnection::getConnection();
         $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND (email="'.$mail.'" OR id="'.$this->userId.'") ';
         $result = $connection->query($sqlIsUser);
         if ($result->num_rows != 1) {
@@ -154,63 +141,57 @@ Class User {
             $getUserQuery = 'SELECT * FROM users WHERE id="' . $this->userId . '" AND deleted=0';
             $resultUser = $connection->query($getUserQuery);
             if ($resultUser->num_rows == 0) {
+                unset($_SESSION);
                 return false;
             }
             $user = $resultUser->fetch_assoc();
             unset($_SESSION['user']);
-            $_SESSION['user'] = $user;
             $loggedUser = new User();
-            unset($_SESSION['user']);
+            $loggedUser->loadUserFromDb($connection, $user['id']);
             $_SESSION['user'] = $loggedUser;
         }
 
-        $connection->close();
-        $connection=null;
         return $result;
     }
 
-    public function deleteUser($password) {
-        $conn = DbConnection::getConnection();
+    public function deleteUser(mysqli $conn, $password) {
 
         $getUserQuery = 'SELECT * FROM users WHERE deleted=0 AND id="' . $this->userId . '"';
         $result = $conn->query($getUserQuery);
+
         if ($result->num_rows == 0) {
             return false;
         }
         $user = $result->fetch_assoc();
-        $this->salt = $user['salt'];
 
-        $hashedOldPassword = $this->hashPassword($password);
-        if ($hashedOldPassword != $user['password']) {
+        if (!password_verify($password, $user['password'])) {
             return false;
         }
 
-        $sentMsq = $this->getSentMessages();
+        $sentMsq = $this->getSentMessages($conn);
         foreach ($sentMsq as $msg) {
-            $msg->senderDeletedMsg();
+            $msg->senderDeletedMsg($conn);
         }
 
-        $receivedMsg = $this->getReceivedMessages();
+        $receivedMsg = $this->getReceivedMessages($conn);
         foreach ($receivedMsg as $msg) {
             $msg->receiverDeletedMsg();
         }
 
-        $myComments = $this->getAllMyComments();
+        $myComments = $this->getAllMyComments($conn);
         foreach ($myComments as $comment) {
             $comment->deleteComment();
         }
 
-        $myTweets = $this->getAllMyTweets();
+        $myTweets = $this->getAllMyTweets($conn);
         foreach ($myTweets as $deleteMyTweet) {
-            $deleteMyTweet->deleteTweet();
+            $deleteMyTweet->deleteTweet($conn);
         }
 
         $getUserQuery = 'UPDATE users SET editedUser="'.date('Y-m-d').'", deleted=1 WHERE id="' . $this->userId . '"';
         $result = $conn->query($getUserQuery) or die($conn->error);
 
         unset($_SESSION['user']);
-        $conn->close();
-        $conn=null;
 
         /*
          *
@@ -219,86 +200,73 @@ Class User {
         return $result;
     }
 
-    public function getAllMyTweets() {
+    public function getAllMyTweets(mysqli $conn) {
         $myTweets = array();
 
-        $dbConnection = DbConnection::getConnection();
         $getTweets = 'SELECT id FROM tweets WHERE deleted=0 AND author_id=' .$this->userId .' ORDER BY id DESC';
-        $result = $dbConnection->query($getTweets);
+        $result = $conn->query($getTweets);
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $myTweet = new Tweet();
-                $myTweet->loadTweetFromDb($row['id']);
+                $myTweet->loadTweetFromDb($conn, $row['id']);
                 $myTweets[$myTweet->getTweetId()] = $myTweet;
             }
         }
-        $dbConnection->close();
-        $dbConnection=null;
         return $myTweets;
     }
 
-    public function getAllMyComments() {
+    public function getAllMyComments(mysqli $conn) {
         $comments = [];
-        $dbConnection = DbConnection::getConnection();
         $getCommentsSql = 'SELECT * FROM tweet_comments WHERE deleted=0 AND author_id='.$this->getUserId();
-        $result = $dbConnection->query($getCommentsSql);
+        $result = $conn->query($getCommentsSql);
 
         while ($row = $result->fetch_assoc()) {
             $comment = new TweetComment();
-            $comment->loadCommentFromDb($row['id']);
+            $comment->loadCommentFromDb($conn, $row['id']);
             $comments[$comment->getCommentId()] = $comment;
         }
 
-        $dbConnection->close();
-        $dbConnection=null;
         return $comments;
     }
 
-    public function getSentMessages() {
+    public function getSentMessages(mysqli $conn) {
         $messages = [];
-        $dbConnection = DbConnection::getConnection();
         $getMessagesSentSql = 'SELECT * FROM messages WHERE sender_deleted=0 AND sender_id='.$this->getUserId();
-        $result = $dbConnection->query($getMessagesSentSql);
+        $result = $conn->query($getMessagesSentSql);
 
         while ($row = $result->fetch_assoc()) {
             $sentMsg = new Message();
-            $sentMsg->loadMessageFromDb($row['id']);
+            $sentMsg->loadMessageFromDb($conn, $row['id']);
             $messages[$sentMsg->getMessageId()] = $sentMsg;
         }
 
-        $dbConnection->close();
-        $dbConnection=null;
         return $messages;
     }
 
-    public function getReceivedMessages() {
+    public function getReceivedMessages(mysqli $conn) {
         $messages = [];
-        $dbConnection = DbConnection::getConnection();
         $getMessagesReceivedSql = 'SELECT * FROM messages WHERE receinver_deleted=0 AND receiver_id='.$this->getUserId();
-        $result = $dbConnection->query($getMessagesReceivedSql);
+        $result = $conn->query($getMessagesReceivedSql);
 
         while ($row = $result->fetch_assoc())  {
             $receivedMsg = new Message();
-            $receivedMsg->loadMessageFromDb($row['id']);
+            $receivedMsg->loadMessageFromDb($conn, $row['id']);
             $messages[$receivedMsg->getMessageId()] = $receivedMsg;
         }
 
-        $dbConnection->close();
-        $dbConnection=null;
         return $messages;
 
     }
 
-    public function getAllFriends() {
+    public function getAllFriends(mysqli $conn) {
 
     }
 
-    public function updateUserPassword($oldPassword, $newPassword, $confirmPassword) {
+    public function updateUserPassword(mysqli $conn, $oldPassword, $newPassword, $confirmPassword) {
         if (empty($oldPassword) || empty($newPassword) || empty($confirmPassword)) {
             return false;
         }
 
-        $conn = DbConnection::getConnection();
         $getUserQuery = 'SELECT * FROM users WHERE deleted=0 AND id="' . $this->userId . '"';
         $result = $conn->query($getUserQuery);
         if ($result->num_rows == 0) {
@@ -321,8 +289,6 @@ Class User {
                             editedUser="'.date('Y-m-d').'" WHERE id="'.$this->userId.'"';
         $result = $conn->query($updateUserQuery) or die ($conn->error.'<br>'.$updateUserQuery);
 
-        $conn->close();
-        $conn=null;
         return $result;
     }
 
@@ -345,8 +311,7 @@ Class User {
         return $link;
     }
 
-    public function findUserByMail($mail) {
-        $conn = DbConnection::getConnection();
+    public function findUserByMail(mysqli $conn, $mail) {
         $searUser = 'SELECT * FROM users WHERE deleted=0 AND email="'.$mail.'"';
         $result = $conn->query($searUser);
         $row = $result->fetch_assoc();
@@ -359,15 +324,12 @@ Class User {
         $this->setEmail($row['mail']);
         $this->setUsername($row['username']);
 
-        $conn->close();
-        $conn=null;
         return $result;
     }
 
-    public function numberOfUnreadedMessages() {
-        $dbConnection = DbConnection::getConnection();
+    public function numberOfUnreadedMessages(mysqli $conn) {
         $sqlCount = 'SELECT id FROM messages WHERE readed=0 AND receiver_id='.$this->getUserId().' AND receinver_deleted=0 ';
-        $result = $dbConnection->query($sqlCount);
+        $result = $conn->query($sqlCount);
         return $result->num_rows;
     }
 

@@ -1,13 +1,14 @@
 <?php
 
-include_once dirname(__FILE__).'/../Classes/User.php';
+require_once dirname(__FILE__).'/../Classes/allClasses.php';
+
 
 session_start();
 if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
 }
 else {
-    return false;
+    header('Location: ../');
 }
 
 function showMessage($text, $type) {
@@ -15,7 +16,7 @@ function showMessage($text, $type) {
 }
 
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteAccount'])) {
-    if ($user->deleteUser($_POST['password'])) {
+    if ($user->deleteUser($conn, $_POST['password'])) {
         header('Location: ../');
     }
     else if (empty($_POST['password'])){
@@ -29,7 +30,7 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delet
 }
 
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changeUserName'])) {
-    if ($user->updateUser($_POST['email'], $_POST['username'])) {
+    if ($user->updateUser($conn, $_POST['email'], $_POST['username'])) {
         header('Location: ../');
     }
     else {
@@ -39,7 +40,7 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chang
 }
 
 if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['changePassword'])) {
-    if ($user->updateUserPassword($_POST['password'], $_POST['newPassword'], $_POST['confirmPassword'])) {
+    if ($user->updateUserPassword($conn, $_POST['password'], $_POST['newPassword'], $_POST['confirmPassword'])) {
         header('Location: ../');
     }
     else if ($_POST['newPassword'] !=  $_POST['confirmPassword']) {

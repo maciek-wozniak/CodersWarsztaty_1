@@ -1,7 +1,6 @@
 <?php
-require_once 'Classes/DbConnection.php';
-include_once 'Classes/User.php';
-include_once 'Classes/Message.php';
+
+require_once dirname(__FILE__).'/Classes/allClasses.php';
 
 session_start();
 
@@ -48,10 +47,10 @@ if (!$conn) {
         <div class="col-sm-12" style="margin-top: 10px;">
             <?php
                 if (isset($_SESSION['user'])) {
-                    $arrayMyTweets = $user->getAllMyTweets();
+                    $arrayMyTweets = $user->getAllMyTweets($conn);
 
                     foreach ($arrayMyTweets as $tweet) {
-                        echo $tweet->showTweet().'<br>';
+                        echo $tweet->showTweet($conn).'<br>';
                     }
                 }
             ?>

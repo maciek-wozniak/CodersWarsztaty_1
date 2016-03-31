@@ -1,9 +1,17 @@
 <?php
 
+session_start();
+if (isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+}
+else {
+    header('Location: ../');
+}
+
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $msgToDelete = new Message();
-    $msgToDelete->loadMessageFromDb($_GET['delete']);
-    $msgToDelete->receiverDeletedMsg();
+    $msgToDelete->loadMessageFromDb($conn, $_GET['delete']);
+    $msgToDelete->receiverDeletedMsg($conn);
 }
 
 ?>
@@ -21,7 +29,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     <?php
 
     $i = 1;
-    $sentMessages = $user->getReceivedMessages();
+    $sentMessages = $user->getReceivedMessages($conn);
     foreach ($sentMessages as $msg) {
 
         if ($msg->getReaded()) {
@@ -41,8 +49,8 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
             $msg->receiverReadedMsg();
         }
 
-        $usr = new User(-1);
-        $usr->loadUserFromDb($msg->getSenderId());
+        $usr = new User();
+        $usr->loadUserFromDb($conn, $msg->getSenderId());
 
         ?>
         <tr data-toggle="collapse" data-target=".msg<? echo $msg->getMessageId(); ?>" style="cursor: pointer; <? echo $styleTextBold ?>">

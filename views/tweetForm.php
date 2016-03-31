@@ -1,16 +1,24 @@
 <?php
 
-include_once dirname(__FILE__).'/../Classes/Tweet.php';
+require_once dirname(__FILE__).'/../Classes/allClasses.php';
+
+session_start();
+if (isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+}
+else {
+    header('Location: ../');
+}
 
 // edytowanie tweetow
 if (isset($_SESSION['user']) && isset($_GET['updateTweet']) && $_GET['updateTweet'] > 0 &&
     $_SERVER['REQUEST_METHOD'] === 'POST' && strlen($_POST['tweetText'])<=140) {
     $updateTweet = new Tweet();
-    $updateTweet->loadTweetFromDb($_GET['updateTweet']);
+    $updateTweet->loadTweetFromDb($conn, $_GET['updateTweet']);
     if ($_SESSION['user']->getUserId() == $updateTweet->getAuthorId()) {
         $updateTweet->setTweetText($_POST['tweetText']);
 
-        if ($updateTweet->updateTweet()) {
+        if ($updateTweet->updateTweet($conn)) {
             header('Location: index.php');
         }
         else {
@@ -25,9 +33,9 @@ else if (isset($_GET['updateTweet']) && strlen($_POST['tweetText'])>140){
 // usuwanie tweetow
 if (isset($_SESSION['user']) && isset($_GET['deleteTweet']) && $_GET['deleteTweet'] > 0 ) {
     $deleteTweet = new Tweet();
-    $deleteTweet->loadTweetFromDb($_GET['deleteTweet']);
+    $deleteTweet->loadTweetFromDb($conn, $_GET['deleteTweet']);
     if ($_SESSION['user']->getUserId() == $deleteTweet->getAuthorId()) {
-        if ($deleteTweet->deleteTweet()) {
+        if ($deleteTweet->deleteTweet($conn)) {
             header('Location: index.php');
         }
         else {
@@ -45,7 +53,7 @@ if (isset($_SESSION['user']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($
     $newTweet->setAuthorId($user->getUserId());
     $newTweet->setTweetText($_POST['tweetText']);
 
-    if ($newTweet->createTweetAndAddToDb()) {
+    if ($newTweet->createTweetAndAddToDb($conn)) {
         header('Location: index.php');;
     }
     else {
@@ -59,7 +67,7 @@ else if (isset($_POST['addTweet']) && strlen($_POST['tweetText'])>140){
 // wczytywanie tweeta do edycji
 if (isset($_GET['editTweet']) && is_numeric($_GET['editTweet']) && $_GET['editTweet'] > 0 && isset($_SESSION['user'])) {
     $editedTweet = new Tweet();
-    $editedTweet->loadTweetFromDb($_GET['editTweet']);
+    $editedTweet->loadTweetFromDb($conn, $_GET['editTweet']);
     if ($editedTweet->getAuthorId() != $_SESSION['user']->getUserId()) {
         unset($editedTweet);
     }

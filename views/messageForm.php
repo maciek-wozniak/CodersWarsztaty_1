@@ -1,10 +1,16 @@
 <?php
 
-
+session_start();
+if (isset($_SESSION['user'])) {
+    $user = $_SESSION['user'];
+}
+else {
+    header('Location: ../');
+}
 
 // Wysyłanie wiadomości
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sendMessage'])){
-    $receiver = new User(-1);
+    $receiver = new User();
     if (!isset($_POST['messageReceiver']) || !(strlen($_POST['messageReceiver'])>1)) {
         $message = 'Proszę podać odbiorcę wiadomości';
     }
@@ -14,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sendMessage'])){
     else if (!isset($_POST['messageText']) || !(strlen($_POST['messageText'])>1)) {
         $message = 'Proszę wpisać tekst wiadomości';
     }
-    else if (!($receiver->findUserByMail($_POST['messageReceiver']))) {
+    else if (!($receiver->findUserByMail($conn, $_POST['messageReceiver']))) {
         $message = 'Nie znaleziono użytkownika o podanym e-mailu';
     }
     else {
@@ -24,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sendMessage'])){
         $message->setMessageText($_POST['messageText']);
         $message->setSenderId($_SESSION['user']->getUserId());
 
-        if ($message->sendMessage()){
+        if ($message->sendMessage($conn)){
             header('Location: messagePanel.php?page=outbox');
         }
         else {
@@ -35,14 +41,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sendMessage'])){
 
 if (isset($_GET['reply']) && is_numeric($_GET['reply'])) {
     $replyToMsg = new Message();
-    $replyToMsg->loadMessageFromDb($_GET['reply']);
+    $replyToMsg->loadMessageFromDb($conn, $_GET['reply']);
 
     if ($replyToMsg->getReceiverId() != $_SESSION['user']->getUserId()) {
         return false;
     }
 
-    $replyToUser = new User(-1);
-    $replyToUser->loadUserFromDb($replyToMsg->getSenderId());
+    $replyToUser = new User();
+    $replyToUser->loadUserFromDb($conn, $replyToMsg->getSenderId());
 }
 
 

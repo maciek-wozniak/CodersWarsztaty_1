@@ -1,14 +1,13 @@
 <?php
-include_once dirname(__FILE__).'/../Classes/DbConnection.php';
-include_once dirname(__FILE__).'/../Classes/User.php';
-include_once dirname(__FILE__).'/../Classes/Message.php';
+
+require_once dirname(__FILE__).'/../Classes/allClasses.php';
 
 session_start();
-if (isset($_SESSION['user']) ) {
+if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
 }
 else {
-    return false;
+    header('Location: ../');
 }
 
 

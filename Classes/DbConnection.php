@@ -15,3 +15,5 @@ Class DbConnection {
     }
 
 }
+
+$conn = DbConnection::getConnection();

@@ -1,6 +1,6 @@
 <?php
 
-
+require_once 'allClasses.php';
 
 Class Message {
 
@@ -73,64 +73,51 @@ Class Message {
         $this->messageText = $messageText;
     }
 
-    public function sendMessage() {
-        $dbConnection = DbConnection::getConnection();
-        $sendSql = 'INSERT INTO messages (sender_id, receiver_id, title, text, send_time) VALUES
+    public function sendMessage(mysqli $conn) {
+        $sendSql = 'INSERT INTO messages (sender_id, receiver_id, title, message_text, send_time) VALUES
             ("'.$this->getSenderId().'", "'.$this->getReceiverId().'", "'.$this->getMessageTitle().'", "'.$this->getMessageText().'",  "'.date('Y-m-d  H:i:s').'")';
 
-        $result = $dbConnection->query($sendSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($sendSql);
         return $result;
     }
 
-    public function receiverReadedMsg() {
+    public function receiverReadedMsg(mysqli $conn) {
         if ($_SESSION['user']->getUserId() != $this->getReceiverId()) {
             return false;
         }
 
         $this->readed = 1;
-        $dbConnection = DbConnection::getConnection();
         $readedSql = 'UPDATE messages SET readed=1 WHERE id='.$this->getMessageId();
 
-        $result = $dbConnection->query($readedSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($readedSql);
         return $result;
     }
 
-    public function receiverDeletedMsg() {
+    public function receiverDeletedMsg(mysqli $conn) {
         if ($_SESSION['user']->getUserId() != $this->getReceiverId()) {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
         $deleteSql = 'UPDATE messages SET receinver_deleted=1 WHERE id='.$this->getMessageId();
 
-        $result = $dbConnection->query($deleteSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($deleteSql);
         return $result;
     }
 
-    public function senderDeletedMsg() {
+    public function senderDeletedMsg(mysqli $conn) {
         if ($_SESSION['user']->getUserId() != $this->getSenderId()) {
             return false;
         }
 
-        $dbConnection = DbConnection::getConnection();
         $deleteSql = 'UPDATE messages SET sender_deleted=1 WHERE id='.$this->getMessageId();
 
-        $result = $dbConnection->query($deleteSql);
-        $dbConnection->close();
-        $dbConnection=null;
+        $result = $conn->query($deleteSql);
         return $result;
     }
 
-    public function loadMessageFromDb($id){
-        $dbConnection = DbConnection::getConnection();
+    public function loadMessageFromDb(mysqli $conn, $id){
         $sqlGetMessage = 'SELECT * FROM messages WHERE id='.$id;
-        $result = $dbConnection->query($sqlGetMessage);
+        $result = $conn->query($sqlGetMessage);
         if ($result->num_rows!=1) {
             return false;
         }
@@ -140,12 +127,10 @@ Class Message {
             $this->setSenderId($dbMessage['sender_id']);
             $this->setReceiverId($dbMessage['receiver_id']);
             $this->setMessageTitle($dbMessage['title']);
-            $this->setMessageText($dbMessage['text']);
+            $this->setMessageText($dbMessage['message_text']);
             $this->setSendTime($dbMessage['send_time']);
             $this->setReaded($dbMessage['readed']);
         }
-        $dbConnection->close();
-        $dbConnection=null;
         return $result;
     }
 

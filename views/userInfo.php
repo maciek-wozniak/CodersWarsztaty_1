@@ -1,19 +1,17 @@
 <?php
-include_once dirname(__FILE__).'/../Classes/DbConnection.php';
-include_once dirname(__FILE__).'/../Classes/User.php';
-include_once dirname(__FILE__).'/../Classes/Message.php';
+require_once dirname(__FILE__).'/../Classes/allClasses.php';
 
 session_start();
-if (isset($_SESSION['user']) ) {
+if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
 }
 else {
-    return false;
+    header('Location: ../');
 }
 
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-    $userInfo = new User(-1);
-    $userInfo->loadUserFromDb($_GET['id']);
+    $userInfo = new User();
+    $userInfo->loadUserFromDb($conn, $_GET['id']);
 }
 
 ?>
@@ -43,7 +41,22 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                         echo $userInfo->getUsername();
                     }
 
+
                     ?>
+                    Stronę wyświetlania użytkownika: Strona ta ma pokazać wszystkie wpisy danego
+                    użytkownika (i pod każdym ilość komentarzy które ma).
+                    Na tej stronie ma być też guzik który umożliwi nam wysłanie wiadomości do tego
+                    użytkownika.
+                     Stronę wyświetlania pos
+
+
+                    Wiadomości wysłane mają wyświetlać odbiorcę, datę wysłania i początek
+                    wiadomości (pierwsze 30 znaków).
+                    Wiadomości odebrane mają wyświetlać nadawcę, datę wysłania i początek
+                    wiadomości (pierwsze 30 znaków). Wiadomości jeszcze nie przeczytane mają być
+                    jakoś oznaczone.
+
+                    nie można do siebie wysyłać wiadomości
 
                 </div>
             </div>
