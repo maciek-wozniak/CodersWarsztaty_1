@@ -12,6 +12,7 @@ Class User {
         $this->userId = -1;
         $this->email = '';
         $this->username = '';
+        $this->salt = '';
     }
 
     public function loadUserFromDb(mysqli $conn, $id) {
@@ -113,7 +114,7 @@ Class User {
         $sqlIsUser = 'SELECT * FROM users WHERE deleted=0 AND email="'.$mail.'" ';
         $result = $connection->query($sqlIsUser);
         if ($result->num_rows == 1 && !($this->email == $mail)) {
-            echo 'Użytkownik o takim mailu już istnieje<br>';
+            echo '<div style="margin: 0 auto; margin-top: 10px; width: 400px;" class="alert alert-danger">Użytkownik o takim mailu już istnieje</div>';
             return false;
         }
 
@@ -128,19 +129,10 @@ Class User {
         $result = $connection->query($updateUserQuery);
 
         if ($result) {
-            $getUserQuery = 'SELECT * FROM users WHERE id="' . $this->userId . '" AND deleted=0';
-            $resultUser = $connection->query($getUserQuery);
-            if ($resultUser->num_rows == 0) {
-                unset($_SESSION);
-                return false;
-            }
-            $user = $resultUser->fetch_assoc();
             unset($_SESSION['user']);
-            $loggedUser = new User();
-            $loggedUser->userId = $user['id'];
-            $loggedUser->setEmail($user['email']);
-            $loggedUser->setUsername($user['username']);
-            $_SESSION['user'] = $loggedUser;
+            $this->setEmail($mail);
+            $this->setUsername($name);
+            $_SESSION['user'] = $this;
         }
 
         return $result;
@@ -249,7 +241,6 @@ Class User {
     }
 
     public function linkToUser($color = null) {
-        $link = '';
         if ($color) {
             $color = ' style="color: '.$color.';"';
         }

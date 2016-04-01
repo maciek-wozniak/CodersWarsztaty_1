@@ -55,7 +55,7 @@ if (isset($_GET['deleteComment']) && is_numeric($_GET['deleteComment'])) {
     }
 
     if ($tweetComment->deleteComment($conn)) {
-        header('Location: tweetComments.php?id='.$id);
+        header('Location: tweetComments.php?id='.$tweet->getTweetId());
     }
     else {
         $message = 'Nie udało się usunąć komentarza';
@@ -80,7 +80,7 @@ if (isset($_GET['editComment']) && is_numeric($_GET['editComment'])) {
             $message = 'Nie udało się zmienić treści komentarza';
         }
         else{
-                header('Location: tweetComments.php?id='.$id);
+                header('Location: tweetComments.php?id='.$tweet->getTweetId());
         }
     }
     else if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editComment']) && strlen($_POST['commentText']) > 60) {

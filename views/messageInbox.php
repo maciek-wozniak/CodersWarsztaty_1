@@ -50,7 +50,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
         if (isset($_GET['msg']) && $_GET['msg'] == $msg->getMessageId()) {
             $style = 'style="display: table-row;"';
             $styleTextBold = '';
-            $msg->receiverReadedMsg();
+            $msg->receiverReadedMsg($conn);
         }
 
         $usr = new User();

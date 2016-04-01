@@ -2,7 +2,6 @@
 
 require_once dirname(__FILE__).'/../Classes/allClasses.php';
 
-
 if (!isset($_SESSION)) {
     session_start();
 }
@@ -21,11 +20,9 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delet
     }
     else if (empty($_POST['password'])){
         $message = 'Nie podano hasła';
-        $messageType = 'danger';
     }
     else {
         $message = 'Nie udało się usunąć konta';
-        $messageType = 'danger';
     }
 }
 
@@ -35,8 +32,7 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chang
         header('Location: ../');
     }
     else {
-        $message = 'Nie udało się zmienić danych, spróbuj jeszcze raz';
-        $messageType = 'danger';
+         $message = 'Nie udało się zmienić danych, spróbuj jeszcze raz';
     }
 }
 
@@ -71,6 +67,13 @@ if (isset($message) && isset($messageType)) {
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 </head>
 <body>
+
+<div class="container">
+<div class="row">
+    <div class="col-sm-12 navbar navbar-default" style="padding-bottom: 20px;"><?php
+            include_once dirname(__FILE__).'/userPanel.php'; ?>
+    </div>
+</div>
 
 <div class="well" style="width: 550px; margin: 0 auto; margin-top: 20px;">
     <form class="form-horizontal" method="post" action="">
@@ -172,3 +175,4 @@ if (isset($message) && isset($messageType)) {
 
     </form>
 </div><br>
+</div>

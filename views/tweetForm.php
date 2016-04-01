@@ -82,11 +82,11 @@ else if (isset($_POST['addTweet']) && strlen($_POST['tweetText'])>140){
 if (isset($_GET['editTweet']) && is_numeric($_GET['editTweet']) && $_GET['editTweet'] > 0 && isset($_SESSION['user'])) {
     $editedTweet = new Tweet();
 
-    if ($editedTweet->loadTweetFromDb($conn, $_GET['editTweet'])) {
+    if ($editedTweet->loadTweetFromDb($conn, $_GET['editTweet']) === false) {
         unset($editedTweet);
     }
 
-    if ($editedTweet->getAuthorId() != $_SESSION['user']->getUserId()) {
+    if (isset($editedTweet) && $editedTweet->getAuthorId() != $_SESSION['user']->getUserId()) {
         unset($editedTweet);
     }
 }

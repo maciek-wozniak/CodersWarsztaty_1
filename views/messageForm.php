@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['sendMessage'])){
 // Jeżeli odpowiadamy na maila
 if (isset($_GET['reply']) && is_numeric($_GET['reply'])) {
     $replyToMsg = new Message();
-    if ($replyToMsg->loadMessageFromDb($conn, $_GET['reply'] === false)) {
+    if ($replyToMsg->loadMessageFromDb($conn, $_GET['reply']) === false) {
         unset($replyToMsg);
     }
 
@@ -54,7 +54,8 @@ if (isset($_GET['reply']) && is_numeric($_GET['reply'])) {
     }
 
     $replyToUser = new User();
-    if ($replyToUser->loadUserFromDb($conn, $replyToMsg->getSenderId() === false)) {
+    if ($replyToUser->loadUserFromDb($conn, $replyToMsg->getSenderId()) === false) {
+        unset($replyToMsg);
         unset($replyToMsg);
     }
 }
@@ -93,13 +94,19 @@ if (isset($message) && isset($messageType)) {
                             else if (isset($replyToUser)) {
                                 echo $replyToUser->getEmail() ;
                             } ?>" />
-                <select class="form-control" name="messageReceiverSelect">
-                    <option value="-1">Wybierz adresata</option>
+                <select class="form-control" name="messageReceiverSelect" id="messageReceiverSelect">
+                    <option value="">Wybierz adresata</option>
                     <?php
                         $allUsers = User::GetAllUsers($conn);
                         foreach ($allUsers as $user) {
                             if ($user->getUserId() != $_SESSION['user']->getUserId()) {
-                                echo '<option value="' . $user->getUserId() . '">' . $user->getEmail . ' ' . $user->getUsername() . '</option>';
+
+                                $selected = '';
+                                if (isset($replyToUser) && $replyToUser->getUserId() == $user->getUserId()) {
+                                    $selected = ' selected';
+                                }
+
+                                echo '<option value="' . $user->getEmail() . '"'.$selected.'>' . $user->getEmail() . ' : ' . $user->getUsername().'</option>';
                             }
                         }
                     ?>

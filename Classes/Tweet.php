@@ -19,6 +19,7 @@ Class Tweet {
         $this->tweetId = -1;
         $this->authorId = 0;
         $this->tweetText = '';
+        $this->createDate = '';
         $this->isDeleted = 0;
     }
 
@@ -97,7 +98,6 @@ Class Tweet {
 
         $editLink = '';
         $deleteLink = '';
-        $commentsLink = '';
         $commentsLink = '<a href="'.ROOT_PATH.'/views/tweetComments.php?id=' . $this->getTweetId() . '" style="color:white;">Komentarzy: [' . $this->numberOfComments($conn) . ']</a>';
 
         if ($this->authorId == $_SESSION['user']->getUserId()) {
