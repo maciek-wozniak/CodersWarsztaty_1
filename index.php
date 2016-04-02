@@ -47,10 +47,11 @@ if (!$conn) {
         <div class="col-sm-12" style="margin-top: 10px;">
             <?php
                 if (isset($_SESSION['user'])) {
-                    $arrayMyTweets = $user->getAllMyTweets($conn);
-
-                    foreach ($arrayMyTweets as $tweet) {
-                        echo $tweet->showTweet($conn).'<br>';
+                    if (isset($_GET['page']) && $_GET['page'] == 'friends') {
+                        include_once 'views/myFriends.php';
+                    }
+                    else {
+                        include_once 'views/myTweets.php';
                     }
                 }
             ?>
@@ -62,7 +63,7 @@ if (!$conn) {
         <div class="col-sm-12">
 
         <?
-            if (isset($_SESSION['user'])) {
+            if (isset($_SESSION['user']) && !isset($_GET['page'])) {
                 include_once dirname(__FILE__).'/views/tweetForm.php';
             }
         ?>

@@ -273,8 +273,42 @@ Class User {
     }
 
     public function getAllFriends(mysqli $conn) {
+        $allFriends = [];
+        $sqlFriends = 'SELECT *
+                        FROM friends f
+                        JOIN users u ON u.id=f.inviting_user_id
+                        WHERE request_accepted=1 AND friend_user_id='.$this->getUserId();
 
+        $result = $conn->query($sqlFriends);
+        if ($result->num_rows>0) {
+            while ($row = $result->fetch_assoc()) {
+                $friend = new User();
+                $friend->userId = $row['id'];
+                $friend->setUsername($row['username']);
+                $friend->setEmail($row['email']);
+                $allFriends[] = $friend;
+            }
+        }
+
+        $sqlFriends = 'SELECT *
+                        FROM friends f
+                        JOIN users u ON u.id=f.friend_user_id
+                        WHERE request_accepted=1 AND inviting_user_id='.$this->getUserId();
+
+        $result = $conn->query($sqlFriends);
+        if ($result->num_rows>0) {
+            while ($row = $result->fetch_assoc()) {
+                $friend = new User();
+                $friend->userId = $row['id'];
+                $friend->setUsername($row['username']);
+                $friend->setEmail($row['email']);
+                $allFriends[] = $friend;
+            }
+        }
+
+        return $allFriends;
     }
+
 
     public function updateUserPassword(mysqli $conn, $oldPassword, $newPassword, $confirmPassword) {
         if (empty($oldPassword) || empty($newPassword) || empty($confirmPassword)) {
