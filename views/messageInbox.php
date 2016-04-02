@@ -61,7 +61,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
             <td style="vertical-align: middle;"><? echo $i ?></td>
             <td style="vertical-align: middle;"><a href="userInfo.php?id=<? echo $usr->getUserId() ?>"><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></a></td>
             <td style="vertical-align: middle;"><? echo $msg->getMessageTitle() ?></td>
-            <td style="vertical-align: middle;"><? echo substr($msg->getMessageText(),0,30) ?></td>
+            <td style="vertical-align: middle;"><? echo strip_tags(substr($msg->getMessageText(),0,30)) ?></td>
             <td style="vertical-align: middle;"><? echo $msg->getSendTime() ?></td>
             <td> <a href="<? if (!($msg->getReaded())) echo 'messagePanel.php?page=inbox&msg='.$msg->getMessageId(); else echo '#' ?>">Otwórz</a><br>
                  <a href="messagePanel.php?reply=<? echo $msg->getMessageId() ?>">Odpowiedz</a> <br>
@@ -70,7 +70,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
         </tr>
 
         <tr class="collapse <? echo $class ?>" <? echo $style ?>>
-            <td colspan="6"><? echo nl2br($msg->getMessageText()) ?></td>
+            <td colspan="6"><? echo stripslashes(nl2br($msg->getMessageText())) ?></td>
         </tr>
 
         <tr class="collapse <? echo $class ?>" <? echo $style ?>>

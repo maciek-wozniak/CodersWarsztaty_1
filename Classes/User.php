@@ -8,6 +8,8 @@ Class User {
     private $email;
     private $username;
 
+    static public $frienshipMsgProposalTitile = 'Nowa propozycja przyjaźni';
+
     public function __construct() {
         $this->userId = -1;
         $this->email = '';
@@ -136,6 +138,72 @@ Class User {
         }
 
         return $result;
+    }
+
+    public function didIProposeFriendship(mysqli $conn, $userId) {
+        $sql = 'SELECT inviting_user_id FROM friends WHERE (inviting_user_id='.$this->getUserId().' AND friend_user_id='.$userId.')';
+        $result = $conn->query($sql);
+        if ($result->num_rows == 1) {
+            return true;
+        }
+        return false;
+    }
+
+    public function isThereFriendshipRequest(mysqli $conn, $userId) {
+        $sql = 'SELECT * FROM friends WHERE request_accepted=0 AND ((inviting_user_id='.$this->getUserId().' AND friend_user_id='.$userId.')
+                  OR (friend_user_id='.$this->getUserId().' AND inviting_user_id='.$userId.'))';
+        $result = $conn->query($sql);
+        if ($result->num_rows == 1) {
+            return true;
+        }
+        return false;
+    }
+
+    public function areWeFriends(mysqli $conn, $userId) {
+        $sql = 'SELECT * FROM friends WHERE request_accepted=1 AND ((inviting_user_id='.$this->getUserId().' AND friend_user_id='.$userId.')
+                  OR (friend_user_id='.$this->getUserId().' AND inviting_user_id='.$userId.'))';
+        $result = $conn->query($sql);
+        if ($result->num_rows == 1) {
+            return true;
+        }
+        return false;
+    }
+
+    public function proposeFriendship(mysqli $conn, $userId){
+        if ($this->isThereFriendshipRequest($conn, $userId) != 0) {
+            return false;
+        }
+
+        $sqlProposeFriendship = 'INSERT INTO friends (inviting_user_id, friend_user_id) VALUES
+                                  ('.$this->getUserId().', '.$userId.')';
+        $result = $conn->query($sqlProposeFriendship);
+        if ($result === true) {
+            $proposalId = $conn->insert_id;
+            $msgText = $this->createProposalFriendshipMsgText($conn);
+            $newFriendMsg = new Message();
+            $newFriendMsg->setSenderId($this->getUserId());
+            $newFriendMsg->setReceiverId($userId);
+            $newFriendMsg->setMessageTitle(self::$frienshipMsgProposalTitile);
+            $newFriendMsg->setMessageText($msgText);
+            if ($newFriendMsg->sendMessage($conn) === true) {
+                $newFriendMsg->senderDeletedMsg($conn);
+
+                $sqlMsgFriendsRelation = 'INSERT INTO message_that_propose_friendship (message_id, friends_id)
+                            VALUES ('.$newFriendMsg->getMessageId().', '.$proposalId.')';
+                if ($conn->query($sqlMsgFriendsRelation) == true) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public function createProposalFriendshipMsgText(mysqli $conn) {
+        return $conn->real_escape_string( 'Użytkownik '.$this->linkToUser().' zaproponował Ci przyjaźć. <a href="userInfo.php?id='.$this->getUserId().'&acceptFriendship=yes">Zaakceptuj</a> lub <a href="userInfo.php?id='.$this->getUserId().'&dontAcceptFriendship=yes">odrzuć</a>');
+    }
+
+    public function findMyProposalFriendshipMsgWith(mysqli $conn, $userId) {
+        return Message::findFriendshipPropositionMsg($conn, $userId, $this->getUserId());
     }
 
     public function deleteUser(mysqli $conn, $password) {
@@ -286,5 +354,55 @@ Class User {
         return $allUsers;
     }
 
+    public function acceptFriendship(mysqli $conn, $myFriendId) {
+        Message::sendAcceptFriendshipMessage($conn, $this->getUserId(), $myFriendId);
+        $msg = $this->findMyProposalFriendshipMsgWith($conn, $myFriendId);
+
+        $sql = 'DELETE FROM message_that_propose_friendship WHERE message_id='.$msg->getMessageId().' ';
+        if ($conn->query($sql) != true) {
+            return false;
+        }
+
+        $sql = 'UPDATE friends SET request_accepted=1 WHERE inviting_user_id='.$myFriendId.' AND friend_user_id='.$this->getUserId().' ';
+        if ($conn->query($sql) != true) {
+            return false;
+        }
+        if ($msg->receiverDeletedMsg($conn) ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function doNotAcceptFriendship(mysqli $conn, $notMyFriendId) {
+        Message::sendDoNotAcceptFriendshipMessage($conn, $this->getUserId(), $notMyFriendId);
+        $msg = $this->findMyProposalFriendshipMsgWith($conn, $notMyFriendId);
+
+        $sql = 'DELETE FROM message_that_propose_friendship WHERE message_id='.$msg->getMessageId().' ';
+        if ($conn->query($sql) != true) {
+            return false;
+        }
+
+        $sql = 'DELETE FROM friends WHERE inviting_user_id='.$notMyFriendId.' AND friend_user_id='.$this->getUserId().' ';
+        if ($conn->query($sql) != true) {
+            return false;
+        }
+
+        if ($msg->receiverDeletedMsg($conn) ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function deleteFriend(mysqli $conn, $userId) {
+        $sql = 'DELETE FROM friends WHERE (inviting_user_id='.$userId.' AND friend_user_id='.$this->getUserId().') OR
+                                            (inviting_user_id='.$this->getUserId().' AND friend_user_id='.$userId.') ';
+        $result = $conn->query($sql);
+        if ($result == true) {
+            return true;
+        }
+        return false;
+    }
 
 }
