@@ -107,8 +107,11 @@ if (!isset($tweet)) {
 <body>
 
     <div class="container">
-
-        <a href="../">Strona główna</a>
+        <div class="row">
+            <div class="col-sm-12 navbar navbar-default" style="padding-bottom: 20px;"><?php
+                include_once dirname(__FILE__).'/userPanel.php'; ?>
+            </div>
+        </div>
 
         <?php
         if (isset($message) && isset($messageType)) {
