@@ -14,10 +14,17 @@ else {
 }
 
 $arrayMyFriends = $user->getAllFriends($conn);
+$allFriendsTweets = [];
 
 foreach ($arrayMyFriends as $friend) {
     $friendsTweets = $friend->getAllMyTweets($conn);
         foreach($friendsTweets as $tweet) {
-            echo $tweet->showTweet($conn).'<br>';
-        }
+            $allFriendsTweets[] = $tweet;
+         }
+}
+
+usort($allFriendsTweets, array('Tweet', 'messageDateComparision'));
+
+foreach ($allFriendsTweets as $tweet) {
+    echo $tweet->showTweet($conn).'<br>';
 }

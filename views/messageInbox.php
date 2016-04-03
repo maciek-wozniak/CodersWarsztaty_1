@@ -59,13 +59,13 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
         ?>
         <tr data-toggle="collapse" data-target=".msg<? echo $msg->getMessageId(); ?>" style="cursor: pointer; <? echo $styleTextBold ?>">
             <td style="vertical-align: middle;"><? echo $i ?></td>
-            <td style="vertical-align: middle;"><a href="userInfo.php?id=<? echo $usr->getUserId() ?>"><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></a></td>
+            <td style="vertical-align: middle;"><a class="stopPropagation" href="userInfo.php?id=<? echo $usr->getUserId() ?>"><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></a></td>
             <td style="vertical-align: middle;"><? echo $msg->getMessageTitle() ?></td>
             <td style="vertical-align: middle;"><? echo strip_tags(substr($msg->getMessageText(),0,30)) ?></td>
             <td style="vertical-align: middle;"><? echo $msg->getSendTime() ?></td>
-            <td> <a href="<? if (!($msg->getReaded())) echo 'messagePanel.php?page=inbox&msg='.$msg->getMessageId(); else echo '#' ?>">Otwórz</a><br>
-                 <a href="messagePanel.php?reply=<? echo $msg->getMessageId() ?>">Odpowiedz</a> <br>
-                 <a href="messagePanel.php?reply=<? echo $msg->getMessageId() ?>&quote=yes">Odpowiedz cytując</a>
+            <td> <a class="openMsg" href="<? if (!($msg->getReaded())) echo 'messagePanel.php?page=inbox&msg='.$msg->getMessageId(); else echo '#' ?>">Otwórz</a><br>
+                 <a class="stopPropagation" href="messagePanel.php?reply=<? echo $msg->getMessageId() ?>">Odpowiedz</a> <br>
+                 <a class="stopPropagation" href="messagePanel.php?reply=<? echo $msg->getMessageId() ?>&quote=yes">Odpowiedz cytując</a>
             </td>
         </tr>
 

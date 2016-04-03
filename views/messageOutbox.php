@@ -43,7 +43,7 @@ foreach ($sentMessages as $msg) {
     ?>
     <tr data-toggle="collapse" data-target=".msg<? echo $msg->getMessageId(); ?>" style="cursor: pointer;">
         <td><? echo $i ?></td>
-        <td><a href="userInfo.php?id=<? echo $usr->getUserId() ?>"><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></a></td>
+        <td><a class="stopPropagation" href="userInfo.php?id=<? echo $usr->getUserId() ?>"><? echo $usr->getEmail().' (' . $usr->getUsername() . ')' ?></a></td>
         <td><? echo $msg->getMessageTitle() ?></td>
         <td><? echo substr($msg->getMessageText(), 0, 30) ?></td>
         <td><? echo $msg->getSendTime() ?></td>

@@ -172,6 +172,9 @@ Class Tweet {
         $this->createDate = $createDate;
     }
 
+    static public function messageDateComparision(Tweet $firstTweet, Tweet $secondTweet) {
+        return ($firstTweet->getCreateDate() < $secondTweet->getCreateDate()) ? 1 : -1;
+    }
 
 
 }

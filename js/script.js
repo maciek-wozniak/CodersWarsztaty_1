@@ -10,4 +10,17 @@ $(function(){
         e.preventDefault();
     });
 
+    $('.stopPropagation').on('click', function(e) {
+        e.stopPropagation();
+    });
+
+    $('.openMsg').on('click', function(){
+        if ($(this).html() == 'Otwórz') {
+            $(this).html('Zamknij');
+        }
+        else {
+            $(this).html('Otwórz');
+        }
+    });
+
 })
