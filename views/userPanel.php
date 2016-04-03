@@ -32,9 +32,9 @@ if (isset($_SESSION['user'])) {
 
 ?>
 Witaj <? echo $user->getEmail() . ' ' . $user->getUsername() . ' ' ?>
-Moje tweety
-Tweety przyjaciół
-<a class="btn btn-primary btn-xs" href="?page=friends">Przyjaciele</a>
+<a class="btn btn-primary btn-xs" href=".">Moje tweety</a>
+<a class="btn btn-primary btn-xs" href="index.php?page=friendsTweets">Tweety przyjaciół</a>
+<a class="btn btn-primary btn-xs" href="index.php?page=friends">Przyjaciele</a>
 <a class="btn btn-primary btn-xs" href="views/messagePanel.php?page=inbox" style="margin: 5px; margin-left: 0px;">Wiadomości <span class="badge"><? echo $user->numberOfUnreadedMessages($conn) ?></span></a>
 <a class="btn btn-primary btn-xs" href="views/editUserPanel.php">Edytuj profil</a>
 <a class="btn btn-primary btn-xs" href="?login=false" style="margin: 5px; margin-left: 0px;">Wyloguj</a>

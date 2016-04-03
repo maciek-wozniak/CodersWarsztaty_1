@@ -50,6 +50,9 @@ if (!$conn) {
                     if (isset($_GET['page']) && $_GET['page'] == 'friends') {
                         include_once 'views/myFriends.php';
                     }
+                    else if (isset($_GET['page']) && $_GET['page'] == 'friendsTweets') {
+                        include_once 'views/myFriendsTweets.php';
+                    }
                     else {
                         include_once 'views/myTweets.php';
                     }
