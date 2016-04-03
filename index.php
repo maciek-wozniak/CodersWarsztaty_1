@@ -3,7 +3,7 @@
 require_once dirname(__FILE__).'/Classes/allClasses.php';
 
 session_start();
-
+ob_start();
 
 $conn = DbConnection::getConnection();
 if (!$conn) {
@@ -22,7 +22,6 @@ if (!$conn) {
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 </head>
 <body>
-
 
 <div class="container">
 

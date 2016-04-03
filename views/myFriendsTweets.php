@@ -23,6 +23,7 @@ foreach ($arrayMyFriends as $friend) {
          }
 }
 
+// Sortujemy tweety data napisania, najnowsze na gorze
 usort($allFriendsTweets, array('Tweet', 'messageDateComparision'));
 
 foreach ($allFriendsTweets as $tweet) {

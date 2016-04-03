@@ -1,10 +1,6 @@
 <?php
-//include_once dirname(__FILE__).'/DbConnection.php';
-require_once 'allClasses.php';
 
-if (!defined('ROOT_PATH')) {
-    define('ROOT_PATH', 'http://' . $_SERVER['HTTP_HOST'] . '/CodersWarsztaty_1');
-}
+require_once 'allClasses.php';
 
 Class TweetComment {
     private $commentId;
@@ -26,52 +22,36 @@ Class TweetComment {
         return $this->commentId;
     }
 
-    public function getTweetId() {
-        return $this->tweetId;
-    }
-
     public function setTweetId($tweetId) {
         $this->tweetId = $tweetId;
     }
 
-    public function getAuthorId() {
-        return $this->authorId;
+    public function getTweetId() {
+        return $this->tweetId;
     }
 
     public function setAuthorId($authorId) {
         $this->authorId = $authorId;
     }
 
-    public function getCommentText() {
-        return $this->commentText;
+    public function getAuthorId() {
+        return $this->authorId;
     }
 
     public function setCommentText($commentText) {
         $this->commentText = $commentText;
     }
 
-    public function getCreationDate() {
-        return $this->creationDate;
+    public function getCommentText() {
+        return $this->commentText;
     }
 
     public function setCreationDate($creationDate) {
         $this->creationDate = $creationDate;
     }
 
-    public function loadCommentFromDb(mysqli $conn, $id){
-        $sqlGetComment = 'SELECT * FROM tweet_comments WHERE deleted=0 AND id='.$id;
-        $result = $conn->query($sqlGetComment);
-        if ($result->num_rows!=1) {
-            return null;
-        }
-        else {
-            $dbComment = $result->fetch_assoc();
-            $this->commentId = $dbComment['id'];
-            $this->tweetId = $dbComment['tweet_id'];
-            $this->authorId = $dbComment['author_id'];
-            $this->creationDate = $dbComment['creation_date'];
-            $this->commentText = $dbComment['comment_text'];
-        }
+    public function getCreationDate() {
+        return $this->creationDate;
     }
 
     static public function GetNumberOfTweetComments(mysqli $conn, $tweetId) {
@@ -129,6 +109,22 @@ Class TweetComment {
         return $result;
     }
 
+    public function loadCommentFromDb(mysqli $conn, $id){
+        $sqlGetComment = 'SELECT * FROM tweet_comments WHERE deleted=0 AND id='.$id;
+        $result = $conn->query($sqlGetComment);
+        if ($result->num_rows!=1) {
+            return null;
+        }
+        else {
+            $dbComment = $result->fetch_assoc();
+            $this->commentId = $dbComment['id'];
+            $this->tweetId = $dbComment['tweet_id'];
+            $this->authorId = $dbComment['author_id'];
+            $this->creationDate = $dbComment['creation_date'];
+            $this->commentText = $dbComment['comment_text'];
+        }
+    }
+
     public function updateComment(mysqli $conn) {
         if (!is_numeric($this->tweetId) || !($this->tweetId>0) || !(strlen($this->commentText)>0) ||
             !is_numeric($this->authorId) || !($this->authorId>0)) {
@@ -174,8 +170,7 @@ Class TweetComment {
         echo '<div class="panel panel-info" style="width: 500px;margin: 0 auto;">';
         echo '<div class="panel-heading">Komentarz ' .$commentAuthor. ' z '
                 .substr($commenttDate,0,strlen($commenttDate)-3).' '.$editLink.' '.$deleteLink.'</div>';
-        echo '<div class="panel-body">'.$this->commentText.'</div>';
+        echo '<div class="panel-body">'.nl2br($this->commentText).'</div>';
         echo '</div>';
     }
-
 }

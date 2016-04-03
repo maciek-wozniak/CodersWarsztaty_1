@@ -25,52 +25,52 @@ Class Message {
         return $this->messageId;
     }
 
-    public function getReaded() {
-        return $this->readed;
-    }
-
     public function setReaded($readed) {
         $this->readed = $readed;
     }
 
-    public function getMessageTitle() {
-        return $this->messageTitle;
+    public function getReaded() {
+        return $this->readed;
     }
 
     public function setMessageTitle($messageTitle) {
         $this->messageTitle = $messageTitle;
     }
 
-    public function getSenderId() {
-        return $this->senderId;
+    public function getMessageTitle() {
+        return $this->messageTitle;
     }
 
     public function setSenderId($senderId) {
         $this->senderId = $senderId;
     }
 
-    public function getReceiverId() {
-        return $this->receiverId;
+    public function getSenderId() {
+        return $this->senderId;
     }
 
     public function setReceiverId($receiverId) {
         $this->receiverId = $receiverId;
     }
 
-    public function getSendTime() {
-        return $this->sendTime;
+    public function getReceiverId() {
+        return $this->receiverId;
     }
 
     public function setSendTime($sendTime) {
         $this->sendTime = $sendTime;
     }
 
-    public function getMessageText() {
-        return $this->messageText;
+    public function getSendTime() {
+        return $this->sendTime;
     }
 
     public function setMessageText($messageText) {
         $this->messageText = $messageText;
+    }
+
+    public function getMessageText() {
+        return $this->messageText;
     }
 
     static public function GetAllReceivedUserMessages(mysqli $conn, $userId){
@@ -125,6 +125,49 @@ Class Message {
         return $result->num_rows;
     }
 
+    static public function sendDoNotAcceptFriendshipMessage($conn, $sender, $receiver) {
+        $deletedFriendRequestMsg = new Message();
+        $deletedFriendRequestMsg->setSenderId($sender);
+        $deletedFriendRequestMsg->setReceiverId($receiver);
+        $deletedFriendRequestMsg->setMessageTitle('Propozycja przyjaźni odrzucona');
+        $deletedFriendRequestMsg->setMessageText('Użytkownik '.$_SESSION['user']->linkToUser().' odrzucił propozycję przyjaźni');
+        $deletedFriendRequestMsg->sendMessage($conn);
+        $deletedFriendRequestMsg->senderDeletedMsg($conn);
+    }
+
+    static public function sendAcceptFriendshipMessage($conn, $sender, $receiver) {
+        $deletedFriendRequestMsg = new Message();
+        $deletedFriendRequestMsg->setSenderId($sender);
+        $deletedFriendRequestMsg->setReceiverId($receiver);
+        $deletedFriendRequestMsg->setMessageTitle('Propozycja przyjaźni zaakceptowana');
+        $deletedFriendRequestMsg->setMessageText('Użytkownik '.$_SESSION['user']->linkToUser().' przyjął propozycję przyjaźni');
+        $deletedFriendRequestMsg->sendMessage($conn);
+        $deletedFriendRequestMsg->senderDeletedMsg($conn);
+    }
+
+    static public function findFriendshipPropositionMsg(mysqli $conn, $sender, $receiver) {
+        $sql = 'SELECT m.id as id, m.message_text AS msg_text, m.sender_id AS sender, m.receiver_id AS receiver, m.title AS title
+                FROM messages m
+                JOIN message_that_propose_friendship mp ON m.id=mp.message_id
+                JOIN friends f ON f.id=mp.friends_id
+                WHERE m.sender_id='.$sender.' AND m.receiver_id='.$receiver.' ';
+
+
+        $result = $conn->query($sql);
+        if ($result->num_rows==1) {
+            $row = $result->fetch_assoc();
+
+            $msg = new Message();
+            $msg->messageId = $row['id'];
+            $msg->setMessageText($row['msg_text']);
+            $msg->setSenderId($row['sender']);
+            $msg->setReceiverId($row['receiver']);
+            $msg->setMessageTitle($row['title']);
+
+            return $msg;
+        }
+        return false;
+    }
 
     public function sendMessage(mysqli $conn) {
         $sendSql = 'INSERT INTO messages (sender_id, receiver_id, title, message_text, send_time) VALUES
@@ -133,6 +176,25 @@ Class Message {
 
         $result = $conn->query($sendSql) ;
         $this->messageId = $conn->insert_id;
+        return $result;
+    }
+
+    public function loadMessageFromDb(mysqli $conn, $id){
+        $sqlGetMessage = 'SELECT * FROM messages WHERE id='.$id;
+        $result = $conn->query($sqlGetMessage);
+        if ($result->num_rows!=1) {
+            return false;
+        }
+        else {
+            $dbMessage = $result->fetch_assoc();
+            $this->messageId = $dbMessage['id'];
+            $this->setSenderId($dbMessage['sender_id']);
+            $this->setReceiverId($dbMessage['receiver_id']);
+            $this->setMessageTitle($dbMessage['title']);
+            $this->setMessageText($dbMessage['message_text']);
+            $this->setSendTime($dbMessage['send_time']);
+            $this->setReaded($dbMessage['readed']);
+        }
         return $result;
     }
 
@@ -176,26 +238,6 @@ Class Message {
         return $result;
     }
 
-    static public function sendDoNotAcceptFriendshipMessage($conn, $sender, $receiver) {
-        $deletedFriendRequestMsg = new Message();
-        $deletedFriendRequestMsg->setSenderId($sender);
-        $deletedFriendRequestMsg->setReceiverId($receiver);
-        $deletedFriendRequestMsg->setMessageTitle('Propozycja przyjaźni odrzucona');
-        $deletedFriendRequestMsg->setMessageText('Użytkownik '.$_SESSION['user']->linkToUser().' odrzucił propozycję przyjaźni');
-        $deletedFriendRequestMsg->sendMessage($conn);
-        $deletedFriendRequestMsg->senderDeletedMsg($conn);
-    }
-
-    static public function sendAcceptFriendshipMessage($conn, $sender, $receiver) {
-        $deletedFriendRequestMsg = new Message();
-        $deletedFriendRequestMsg->setSenderId($sender);
-        $deletedFriendRequestMsg->setReceiverId($receiver);
-        $deletedFriendRequestMsg->setMessageTitle('Propozycja przyjaźni zaakceptowana');
-        $deletedFriendRequestMsg->setMessageText('Użytkownik '.$_SESSION['user']->linkToUser().' przyjął propozycję przyjaźni');
-        $deletedFriendRequestMsg->sendMessage($conn);
-        $deletedFriendRequestMsg->senderDeletedMsg($conn);
-    }
-
     public function senderDeletedMsg(mysqli $conn) {
         if ($_SESSION['user']->getUserId() != $this->getSenderId()) {
             return false;
@@ -205,49 +247,6 @@ Class Message {
 
         $result = $conn->query($deleteSql);
         return $result;
-    }
-
-    public function loadMessageFromDb(mysqli $conn, $id){
-        $sqlGetMessage = 'SELECT * FROM messages WHERE id='.$id;
-        $result = $conn->query($sqlGetMessage);
-        if ($result->num_rows!=1) {
-            return false;
-        }
-        else {
-            $dbMessage = $result->fetch_assoc();
-            $this->messageId = $dbMessage['id'];
-            $this->setSenderId($dbMessage['sender_id']);
-            $this->setReceiverId($dbMessage['receiver_id']);
-            $this->setMessageTitle($dbMessage['title']);
-            $this->setMessageText($dbMessage['message_text']);
-            $this->setSendTime($dbMessage['send_time']);
-            $this->setReaded($dbMessage['readed']);
-        }
-        return $result;
-    }
-
-    static public function findFriendshipPropositionMsg(mysqli $conn, $sender, $receiver) {
-        $sql = 'SELECT m.id as id, m.message_text AS msg_text, m.sender_id AS sender, m.receiver_id AS receiver, m.title AS title
-                FROM messages m
-                JOIN message_that_propose_friendship mp ON m.id=mp.message_id
-                JOIN friends f ON f.id=mp.friends_id
-                WHERE m.sender_id='.$sender.' AND m.receiver_id='.$receiver.' ';
-
-
-        $result = $conn->query($sql);
-        if ($result->num_rows==1) {
-            $row = $result->fetch_assoc();
-
-            $msg = new Message();
-            $msg->messageId = $row['id'];
-            $msg->setMessageText($row['msg_text']);
-            $msg->setSenderId($row['sender']);
-            $msg->setReceiverId($row['receiver']);
-            $msg->setMessageTitle($row['title']);
-
-            return $msg;
-        }
-        return false;
     }
 
     public function isFriendshipProposalNotAcceptedMsg(mysqli $conn) {

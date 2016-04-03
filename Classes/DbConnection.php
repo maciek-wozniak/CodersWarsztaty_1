@@ -22,3 +22,5 @@ $messageType = 'danger';
 function showMessage($text, $type) {
     echo '<div class="alert alert-'.$type.'" role="alert" style="width: 400px; margin: 0 auto; margin-top: 20px;">'.$text.'</div>';
 }
+
+

@@ -12,6 +12,7 @@ else {
     header('Location: ../');
 }
 
+// Ładujemy użytkownika, zeby wyswietlic o nim informacje
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $userInfo = new User();
     if ($userInfo->loadUserFromDb($conn, $_GET['id']) === false) {

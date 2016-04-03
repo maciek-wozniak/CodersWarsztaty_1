@@ -2,9 +2,6 @@
 
 require_once 'allClasses.php';
 
-if (!defined('ROOT_PATH')) {
-    define('ROOT_PATH', 'http://' . $_SERVER['HTTP_HOST'] . '/CodersWarsztaty_1');
-}
 
 
 Class Tweet {
@@ -23,8 +20,49 @@ Class Tweet {
         $this->isDeleted = 0;
     }
 
+    public function getTweetId() {
+        return $this->tweetId;
+    }
+
+    public function setAuthorId($authorId) {
+        if (is_numeric($authorId) && $authorId > 0) {
+            $this->authorId = $authorId;
+        }
+    }
+
+    public function getAuthorId() {
+        return $this->authorId;
+    }
+
+    public function setTweetText($tweetText) {
+        if (strlen($tweetText) > 0) {
+            $this->tweetText = $tweetText;
+        }
+    }
+
+    public function getTweetText() {
+        return $this->tweetText;
+    }
+
+    public function setIsDeleted($isDeleted) {
+        $this->isDeleted = $isDeleted;
+    }
+
+    public function getIsDeleted() {
+        return $this->isDeleted;
+    }
+
+    public function setCreateDate($createDate) {
+        $this->createDate = $createDate;
+    }
+
+    public function getCreateDate() {
+        return $this->createDate;
+    }
+
     static public function GetAllUserTweets(mysqli $conn, $userId){
         $allTweets = [];
+
         $sqlTweets = 'SELECT * FROM tweets WHERE deleted=0 AND author_id='.$userId.' ORDER BY created DESC';
         $result = $conn->query($sqlTweets);
 
@@ -44,6 +82,21 @@ Class Tweet {
         return $allTweets;
     }
 
+    static public function messageDateComparision(Tweet $firstTweet, Tweet $secondTweet) {
+        return ($firstTweet->getCreateDate() < $secondTweet->getCreateDate()) ? 1 : -1;
+    }
+
+    public function createTweetAndAddToDb(mysqli $conn) {
+        if (!is_numeric($this->authorId) || !($this->authorId>0) || !(strlen($this->tweetText)>0)) {
+            return false;
+        }
+
+        $addTweetSql = 'INSERT INTO tweets (author_id, tweet_text, created)
+                          VALUES ("'.$this->authorId.'", "'.$this->tweetText.'", "'.date('Y-m-d  H:i:s').'")';
+        $result = $conn->query($addTweetSql);
+        return $result;
+    }
+
     public function loadTweetFromDb(mysqli $conn, $id){
 
         $sqlGetTweet = 'SELECT * FROM tweets WHERE deleted=0 AND id='.$id;
@@ -59,17 +112,6 @@ Class Tweet {
             $this->setCreateDate($dbTweet['created']);
             $this->setIsDeleted(0);
         }
-        return $result;
-    }
-
-    public function createTweetAndAddToDb(mysqli $conn) {
-        if (!is_numeric($this->authorId) || !($this->authorId>0) || !(strlen($this->tweetText)>0)) {
-            return false;
-        }
-
-        $addTweetSql = 'INSERT INTO tweets (author_id, tweet_text, created)
-                          VALUES ("'.$this->authorId.'", "'.$this->tweetText.'", "'.date('Y-m-d  H:i:s').'")';
-        $result = $conn->query($addTweetSql);
         return $result;
     }
 
@@ -109,11 +151,14 @@ Class Tweet {
         echo '<div class="panel panel-primary" style="width: 500px;margin: 0 auto;">';
             echo '<div class="panel-heading">Tweet '.$tweetAuthorLink.' z '.substr($tweetDate,0,strlen($tweetDate)-3).' '
                     .$editLink.' '.$deleteLink.' '.$commentsLink.'</div>';
-            echo '<div class="panel-body">'.$this->tweetText.'</div>';
+            echo '<div class="panel-body">'.nl2br($this->tweetText).'</div>';
         echo '</div>';
     }
 
-    public function deleteTweet(mysqli $conn) {
+    public function deleteTweet(mysqli $conn) {$myTweets = $this->getAllMyTweets($conn);
+        foreach ($myTweets as $deleteMyTweet) {
+            $deleteMyTweet->deleteTweet($conn);
+        }
         if (!isset($_SESSION['user']) || $_SESSION['user']->getUserId() != $this->authorId) {
             return false;
         }
@@ -131,50 +176,4 @@ Class Tweet {
     public function numberOfComments(mysqli $conn) {
         return TweetComment::GetNumberOfTweetComments($conn, $this->getTweetId());
     }
-
-    public function getTweetId() {
-        return $this->tweetId;
-    }
-
-    public function getAuthorId() {
-        return $this->authorId;
-    }
-
-    public function setAuthorId($authorId) {
-        if (is_numeric($authorId) && $authorId > 0) {
-            $this->authorId = $authorId;
-        }
-    }
-
-    public function getTweetText() {
-        return $this->tweetText;
-    }
-
-    public function setTweetText($tweetText) {
-        if (strlen($tweetText) > 0) {
-            $this->tweetText = $tweetText;
-        }
-    }
-
-    public function getIsDeleted() {
-        return $this->isDeleted;
-    }
-
-    public function setIsDeleted($isDeleted) {
-        $this->isDeleted = $isDeleted;
-    }
-
-    public function getCreateDate() {
-        return $this->createDate;
-    }
-
-    public function setCreateDate($createDate) {
-        $this->createDate = $createDate;
-    }
-
-    static public function messageDateComparision(Tweet $firstTweet, Tweet $secondTweet) {
-        return ($firstTweet->getCreateDate() < $secondTweet->getCreateDate()) ? 1 : -1;
-    }
-
-
 }

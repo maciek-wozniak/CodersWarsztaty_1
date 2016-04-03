@@ -18,3 +18,5 @@ $arrayMyTweets = $user->getAllMyTweets($conn);
 foreach ($arrayMyTweets as $tweet) {
     echo $tweet->showTweet($conn).'<br>';
 }
+
+

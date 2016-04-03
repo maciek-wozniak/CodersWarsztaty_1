@@ -2,6 +2,7 @@
 
 require_once '../Classes/allClasses.php';
 
+// Rejestrujemy użytkownika
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $messageType = 'danger';
     $email = $_POST['email'];

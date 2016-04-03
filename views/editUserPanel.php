@@ -51,9 +51,6 @@ if (isset($user) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chang
     }
 }
 
-if (isset($message) && isset($messageType)) {
-    showMessage($message, $messageType);
-}
 
 ?>
 
@@ -74,6 +71,14 @@ if (isset($message) && isset($messageType)) {
             include_once dirname(__FILE__).'/userPanel.php'; ?>
     </div>
 </div>
+
+    <?php
+
+    if (isset($message) && isset($messageType)) {
+        showMessage($message, $messageType);
+    }
+
+    ?>
 
 <div class="well" style="width: 550px; margin: 0 auto; margin-top: 20px;">
     <form class="form-horizontal" method="post" action="">

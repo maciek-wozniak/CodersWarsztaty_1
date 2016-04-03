@@ -11,6 +11,7 @@ else {
     header('Location: ../');
 }
 
+// Usuwamy otrzymaną wiadomość
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $msgToDelete = new Message();
     $msgToDelete->loadMessageFromDb($conn, $_GET['delete']);
