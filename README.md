@@ -1,5 +1,4 @@
 # CodersWarsztaty_1
-My version of twitter :)
 
 Website 'almost' like twitter :P
 
