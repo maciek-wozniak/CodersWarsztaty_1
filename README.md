@@ -9,6 +9,7 @@ Created using:
 - Bootstrap front-end framework
 - OOP PHP
 - jQuery
+- MySQL
 
 
 Implemented features:
