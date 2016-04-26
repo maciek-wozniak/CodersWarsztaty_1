@@ -7,7 +7,6 @@ Created using:
 - HTML
 - CSS
 - Bootstrap front-end framework
-
 - OOP PHP
 - jQuery
 
