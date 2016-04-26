@@ -15,16 +15,16 @@ Website was created using:
 Implemented features:
 - registration
 - user login and logout
-- editing profile data
-- deleting account
-- sending, receiving, answering, deleting messages (user<->user)
-- adding, deleting, editing tweets
-- adding, deleting, editing comments
-- sending friendship proposal
-- accepting, discarding friendship proposal (with return msg)
-- deleting friendhsip
-- showing list of friends
-- showing user tweets
-- showing user friends tweets
-- showing tweet with all comments
-- showing user profile
+- edit profile data
+- delete account
+- send, receive, answer, delete messages (user<->user)
+- add, delete, edit tweets
+- add, delete, edit comments
+- send friendship proposal
+- accept, discard friendship proposal (with return msg)
+- delete friendhsip
+- list of friends
+- user's tweets
+- user's friends tweets
+- tweet with all comments
+- user profile
