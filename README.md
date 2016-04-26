@@ -2,7 +2,7 @@
 
 Website 'almost' like twitter :P
 
-Created using:
+Website was created using:
 
 - HTML
 - CSS
