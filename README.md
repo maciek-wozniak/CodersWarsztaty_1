@@ -4,12 +4,12 @@ Website 'almost' like twitter :P
 
 Created using:
 
--HTML
--CSS
--Bootstrap front-end framework
+- HTML
+- CSS
+- Bootstrap front-end framework
 
--OOP PHP
--jQuery
+- OOP PHP
+- jQuery
 
 
 Implemented features:
